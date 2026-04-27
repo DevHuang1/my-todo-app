@@ -17,12 +17,15 @@ export async function registerUser(formData: FormData) {
     password,
     options: {
       data: { full_name: name },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "https://your-app.vercel.app"}/auth/confirm`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm`,
     },
   });
   if (error) {
-    console.error(error.message);
-    return redirect("/signup?error=could-not-authenticate");
+    // 3. This will show up in your Vercel "Logs" tab
+    console.error("Signup Error Log:", error.message);
+
+    // Pass the real error to the URL to see it in your browser
+    return redirect(`/signup?error=${encodeURIComponent(error.message)}`);
   }
 
   return redirect("/login?message=check-email-to-confirm");
