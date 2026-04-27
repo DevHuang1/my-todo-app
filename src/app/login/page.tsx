@@ -17,6 +17,7 @@ export default function SignIn() {
             </label>
             <div className="mt-2">
               <input
+                name="email"
                 type="email"
                 required
                 className="block w-full rounded-lg bg-white/10 px-4 py-2.5 text-white ring-1 ring-white/20 focus:ring-2 focus:ring-indigo-500 sm:text-sm"
@@ -40,6 +41,7 @@ export default function SignIn() {
             </div>
             <div className="mt-2">
               <input
+                name="password"
                 type="password"
                 required
                 className="block w-full rounded-lg bg-white/10 px-4 py-2.5 text-white ring-1 ring-white/20 focus:ring-2 focus:ring-indigo-500 sm:text-sm"
