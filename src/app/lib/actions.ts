@@ -17,10 +17,15 @@ export async function registerUser(formData: FormData) {
     password,
     options: {
       data: { full_name: name },
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "https://your-app.vercel.app"}/auth/confirm`,
     },
   });
-  if (error) redirect("/signup?error=could-not-authenticate");
-  redirect("/login?message=check-email-to-confirm");
+  if (error) {
+    console.error(error.message);
+    return redirect("/signup?error=could-not-authenticate");
+  }
+
+  return redirect("/login?message=check-email-to-confirm");
 }
 
 export async function loginUser(formData: FormData) {
