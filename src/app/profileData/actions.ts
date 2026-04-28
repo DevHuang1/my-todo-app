@@ -78,9 +78,8 @@ export async function updateProfile(formData: FormData) {
   profileData.cover_url = coverUrl || currentCoverUrl || null;
   const { error } = await supabase.from("profiles").upsert(profileData);
   if (error) throw error;
-  revalidatePath("/", "layout");
-  revalidatePath("/dashboard");
   revalidatePath("/profile");
+  revalidatePath("/dashboard");
   redirect("/dashboard");
 }
 
