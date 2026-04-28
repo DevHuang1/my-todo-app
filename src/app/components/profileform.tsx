@@ -29,6 +29,16 @@ export default async function Profile({
     <div className="min-h-screen bg-white dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <form action={updateProfile}>
+          <input
+            type="hidden"
+            name="current-avatar-url"
+            value={initialProfile?.avatar_url || ""}
+          />
+          <input
+            type="hidden"
+            name="current-cover-url"
+            value={initialProfile?.cover_url || ""}
+          />
           <div className="space-y-12">
             <div className="border-b border-gray-900/10 pb-12 dark:border-white/10">
               <h2 className="text-base/7 font-semibold text-gray-900 dark:text-white">
@@ -56,6 +66,7 @@ export default async function Profile({
                         id="username"
                         name="username"
                         type="text"
+                        defaultValue={initialProfile?.username || ""} // Add this to ALL inputs
                         placeholder="janesmith"
                         className="block min-w-0 grow bg-white py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6 dark:bg-transparent dark:text-white dark:placeholder:text-gray-500"
                       />

@@ -39,12 +39,14 @@ export async function updateProfile(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("User not authenticated");
+  const currentAvatarUrl = formData.get("current-avatar-url") as string;
+  const currentCoverUrl = formData.get("current-cover-url") as string;
 
   const avatarFile = formData.get("avatar-url") as File;
   const avatarUrl = await uploadImage(supabase, avatarFile, "avatars", user.id);
+
   const coverFile = formData.get("cover-url") as File;
   const coverUrl = await uploadImage(supabase, coverFile, "covers", user.id);
-
   const username = formData.get("username") as string;
   const firstName = formData.get("first-name") as string;
   const lastName = formData.get("last-name") as string;
@@ -71,11 +73,9 @@ export async function updateProfile(formData: FormData) {
   if (country?.trim()) profileData.country = country;
 
   profileData.updated_at = new Date().toISOString();
-  if (avatarUrl) {
-    profileData.avatar_url = avatarUrl;
-  }
 
-  if (coverUrl) profileData.cover_url = coverUrl;
+  profileData.avatar_url = avatarUrl || currentAvatarUrl || null;
+  profileData.cover_url = coverUrl || currentCoverUrl || null;
   const { error } = await supabase.from("profiles").upsert(profileData);
   if (error) throw error;
   revalidatePath("/", "layout");
