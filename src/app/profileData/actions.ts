@@ -20,7 +20,9 @@ async function uploadImage(
 
   const { error: uploadError } = await supabase.storage
     .from(bucket)
-    .upload(filePath, file);
+    .upload(filePath, file, {
+      upsert: true,
+    });
 
   if (uploadError) {
     console.error("Storage Upload Error:", uploadError.message);
