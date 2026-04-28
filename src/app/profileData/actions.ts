@@ -11,13 +11,13 @@ async function uploadImage(
   bucket: string,
   userId: string,
 ) {
-  if (!file || file.size === 0) return null;
+  if (!file || file.size === 0 || typeof file === "string") return null;
   const fileExt = file.name.split(".").pop();
   const fileName = `${userId}-${Math.random()}.${fileExt}`;
   const filePath = `${fileName}`;
 
   const { error: uploadError } = await supabase.storage
-    .form(bucket)
+    .from(bucket)
     .upload(filePath, file);
 
   if (uploadError) {
@@ -38,7 +38,8 @@ export async function updateProfile(formData: FormData) {
 
   const avatarFile = formData.get("avatar-url") as File;
   const avatarUrl = await uploadImage(supabase, avatarFile, "avatars", user.id);
-
+  const coverFile = formData.get("cover-url") as File;
+  const coverUrl = await uploadImage(supabase, coverFile, "covers", user.id);
   const firstName = formData.get("first-name") as string;
   const lastName = formData.get("last-name") as string;
 
@@ -59,8 +60,10 @@ export async function updateProfile(formData: FormData) {
   if (avatarUrl) {
     profileData.avatarUrl = avatarUrl;
   }
+  if (coverUrl) profileData.cover_url = coverUrl;
   const { error } = await supabase.from("profiles").upsert(profileData);
   if (error) throw error;
+  revalidatePath("/", "layout");
   revalidatePath("/dashboard");
   revalidatePath("/profile");
   redirect("/dashboard");
