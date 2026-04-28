@@ -87,11 +87,15 @@ export async function editProfile(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("User not authenticated");
+  const avatarFile = formData.get("avatar-url") as File;
+  const coverFile = formData.get("cover-url") as File;
 
+  const avatarUrl = await uploadImage(supabase, avatarFile, "avatars", user.id);
+  const coverUrl = await uploadImage(supabase, coverFile, "covers", user.id);
   const firstName = formData.get("first-name") as string;
   const lastName = formData.get("last-name") as string;
 
-  const profileData = {
+  const profileData: any = {
     username: formData.get("username"),
     full_name: `${firstName} ${lastName}`.trim(),
     about: formData.get("about"),
@@ -102,6 +106,8 @@ export async function editProfile(formData: FormData) {
     postal_code: formData.get("postal-code"),
     updated_at: new Date().toISOString(),
   };
+  if (avatarUrl) profileData.avatar_url = avatarUrl;
+  if (coverUrl) profileData.cover_url = coverUrl;
 
   const { error } = await supabase
     .from("profiles")
@@ -110,5 +116,7 @@ export async function editProfile(formData: FormData) {
 
   if (error) throw error;
 
+  revalidatePath("/", "layout");
   revalidatePath("/profile");
+  revalidatePath("/dashboard");
 }
