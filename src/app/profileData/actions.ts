@@ -59,7 +59,18 @@ export async function updateProfile(formData: FormData) {
 
   const profileData: any = { id: user.id };
 
-  if (username?.trim()) profileData.username = username;
+  if (username?.trim()) {
+    const { data: existingUser } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("username", username)
+      .single();
+
+    if (existingUser && existingUser.id !== user.id) {
+      // This username belongs to another account!
+      throw new Error("This username is already taken. Please choose another.");
+    }
+  }
 
   if (firstName?.trim() || lastName?.trim()) {
     profileData.full_name = `${firstName || ""} ${lastName || ""}`.trim();
@@ -76,8 +87,16 @@ export async function updateProfile(formData: FormData) {
 
   profileData.avatar_url = avatarUrl || currentAvatarUrl || null;
   profileData.cover_url = coverUrl || currentCoverUrl || null;
-  const { error } = await supabase.from("profiles").upsert(profileData);
-  if (error) throw error;
+  const { error } = await supabase.from("profiles").upsert(profileData, {
+    onConflict: "id",
+  });
+
+  if (error) {
+    if (error.code === "23505") {
+      throw new Error("Username already exists.");
+    }
+    throw error;
+  }
   revalidatePath("/profile");
   revalidatePath("/dashboard");
   redirect("/dashboard");
