@@ -58,7 +58,7 @@ export async function updateProfile(formData: FormData) {
     updated_at: new Date().toISOString(),
   };
   if (avatarUrl) {
-    profileData.avatarUrl = avatarUrl;
+    profileData.avatar_url = avatarUrl;
   }
   if (coverUrl) profileData.cover_url = coverUrl;
   const { error } = await supabase.from("profiles").upsert(profileData);

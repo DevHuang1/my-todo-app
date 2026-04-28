@@ -2,8 +2,6 @@
 import { createClient } from "@/utils/supabase/server";
 import {
   Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
   Menu,
   MenuButton,
   MenuItem,
