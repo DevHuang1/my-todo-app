@@ -6,17 +6,16 @@ import ProfileForm from "@/app/components/profileform";
 export default async function Profile() {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
+  const { data: profile, error } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", user?.id)
+    .eq("id", user.id)
     .single();
-  if (profile?.username) {
-    redirect("/dashboard");
-  }
-  return <ProfileForm initialProfile={profile} />;
+  return <ProfileForm initialProfile={profile || { id: user.id }} />;
 }

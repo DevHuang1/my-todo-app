@@ -4,15 +4,13 @@ import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { updateProfile } from "../profileData/actions";
 import { useState } from "react";
 
-export default async function Profile({
-  initialProfile,
-}: {
-  initialProfile: any;
-}) {
+export default function Profile({ initialProfile }: { initialProfile: any }) {
   const [avatarPreview, setAvatarPreview] = useState(
-    initialProfile?.avatar_url,
+    initialProfile?.avatar_url || "",
   );
-  const [coverPreview, setCoverPreview] = useState(initialProfile?.cover_url);
+  const [coverPreview, setCoverPreview] = useState(
+    initialProfile?.cover_url || "",
+  );
   const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     type: "avatar" | "cover",
@@ -22,13 +20,9 @@ export default async function Profile({
       const url = URL.createObjectURL(file);
 
       if (type === "avatar") {
-        if (avatarPreview?.startsWith("blob:"))
-          URL.revokeObjectURL(avatarPreview);
         setAvatarPreview(url);
       }
       if (type === "cover") {
-        if (coverPreview?.startsWith("blob:"))
-          URL.revokeObjectURL(coverPreview);
         setCoverPreview(url);
       }
     }
@@ -145,7 +139,7 @@ export default async function Profile({
                     className="mt-2 flex justify-center rounded-lg border border-dashed border-white/25 px-6 py-10 bg-cover bg-center"
                     style={{
                       backgroundImage: coverPreview
-                        ? `url('${coverPreview}')`
+                        ? `url("${coverPreview}")`
                         : "none",
                     }}
                   >
