@@ -74,15 +74,21 @@ export default function Profile() {
                       aria-hidden="true"
                       className="size-12 text-gray-300 dark:text-gray-500"
                     />
-                    <button
-                      type="button"
-                      className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs outline outline-1 outline-gray-300 hover:bg-gray-50 dark:bg-white/10 dark:text-white dark:outline-white/5 dark:hover:bg-white/20"
+                    <label
+                      htmlFor="avatar-upload"
+                      className="cursor-pointer rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs outline outline-1 outline-gray-300 hover:bg-gray-50 dark:bg-white/10 dark:text-white dark:outline-white/5 dark:hover:bg-white/20"
                     >
-                      Change
-                    </button>
+                      <span>Change</span>
+                      <input
+                        id="avatar-upload"
+                        name="avatar-url"
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                      />
+                    </label>
                   </div>
                 </div>
-
                 <div className="col-span-full">
                   <label
                     htmlFor="cover-photo"
@@ -98,14 +104,15 @@ export default function Profile() {
                       />
                       <div className="mt-4 flex text-sm/6 text-gray-600 dark:text-gray-400">
                         <label
-                          htmlFor="file-upload"
-                          className="relative cursor-pointer rounded-md bg-transparent font-semibold text-indigo-600 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:focus-within:outline-indigo-500 dark:hover:text-indigo-300"
+                          htmlFor="cover-upload"
+                          className="relative cursor-pointer rounded-md bg-transparent font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
                         >
                           <span>Upload a file</span>
                           <input
-                            id="file-upload"
-                            name="file-upload"
+                            id="cover-upload"
+                            name="cover-url"
                             type="file"
+                            accept="image/*"
                             className="sr-only"
                           />
                         </label>

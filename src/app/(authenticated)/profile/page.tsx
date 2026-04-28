@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
-import { editProfile } from "../profileData/actions";
+import { editProfile } from "../../profileData/actions";
 import FormShell from "@/app/components/formshell";
 import Link from "next/link";
 
