@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default async function VisualIdentity({ profile }: { profile: any }) {
+export default function VisualIdentity({ profile }: { profile: any }) {
   const [previews, setPreviews] = useState({
     avatar: profile?.avatar_url,
     cover: profile?.cover_url,
@@ -50,7 +50,7 @@ export default async function VisualIdentity({ profile }: { profile: any }) {
             />
 
             {/* Avatar Box */}
-            <div className="absolute bottom-4 left-4 flex items-center gap-4 z-30">
+            <div className="absolute bottom-4 left-4 flex items-center gap-4 z-40">
               <div className="size-20 rounded-xl bg-zinc-800 border-2 border-[#09090b] overflow-hidden relative shadow-2xl">
                 <img
                   src={previews.avatar || "/default-avatar.png"}
