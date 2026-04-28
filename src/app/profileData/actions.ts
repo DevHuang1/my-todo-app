@@ -15,7 +15,7 @@ async function uploadImage(
     return null;
   }
   const fileExt = file.name.split(".").pop();
-  const fileName = `${userId}-${Math.random()}.${fileExt}`;
+  const fileName = `${userId}-${Date.now()}.${fileExt}`;
   const filePath = `${fileName}`;
 
   const { error: uploadError } = await supabase.storage

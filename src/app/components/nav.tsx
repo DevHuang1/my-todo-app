@@ -20,6 +20,7 @@ export default async function Navbar() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user?.id) return null;
   const { data: profile } = await supabase
     .from("profiles")
     .select("avatar_url, username")
