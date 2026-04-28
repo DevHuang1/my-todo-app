@@ -21,12 +21,12 @@ export default function VisualIdentity({ profile }: { profile: any }) {
       <input
         type="hidden"
         name="current-avatar-url"
-        value={profile?.avatar_url || ""}
+        value={previews.avatar || ""}
       />
       <input
         type="hidden"
         name="current-cover-url"
-        value={profile?.cover_url || ""}
+        value={previews.cover || ""}
       />
       <div>
         <h2 className="text-base font-semibold text-white">Visual Identity</h2>

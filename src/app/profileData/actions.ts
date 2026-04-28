@@ -122,9 +122,12 @@ export async function editProfile(formData: FormData) {
     state_region: (formData.get("region") as string)?.trim() || null,
     postal_code: (formData.get("postal-code") as string)?.trim() || null,
     updated_at: new Date().toISOString(),
-    avatar_url: newAvatarUrl || currentAvatar,
-    cover_url: newCoverUrl || currentCover,
+    avatar_url: newAvatarUrl || currentAvatar || undefined,
+    cover_url: newCoverUrl || currentCover || undefined,
   };
+  Object.keys(profileData).forEach(
+    (key) => profileData[key] === undefined && delete profileData[key],
+  );
 
   const { error } = await supabase
     .from("profiles")
