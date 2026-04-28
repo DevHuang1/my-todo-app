@@ -20,8 +20,17 @@ export default async function Profile({
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
-      if (type === "avatar") setAvatarPreview(url);
-      if (type === "cover") setCoverPreview(url);
+
+      if (type === "avatar") {
+        if (avatarPreview?.startsWith("blob:"))
+          URL.revokeObjectURL(avatarPreview);
+        setAvatarPreview(url);
+      }
+      if (type === "cover") {
+        if (coverPreview?.startsWith("blob:"))
+          URL.revokeObjectURL(coverPreview);
+        setCoverPreview(url);
+      }
     }
   };
 
@@ -66,7 +75,7 @@ export default async function Profile({
                         id="username"
                         name="username"
                         type="text"
-                        defaultValue={initialProfile?.username || ""} // Add this to ALL inputs
+                        defaultValue={initialProfile?.username || ""}
                         placeholder="janesmith"
                         className="block min-w-0 grow bg-white py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6 dark:bg-transparent dark:text-white dark:placeholder:text-gray-500"
                       />
@@ -105,7 +114,8 @@ export default async function Profile({
                   <div className="mt-2 flex items-center gap-x-3">
                     {avatarPreview ? (
                       <img
-                        src={avatarPreview}
+                        src={avatarPreview || "/default-avatar.png"}
+                        key={avatarPreview}
                         className="size-12 rounded-full object-cover"
                         alt="Avatar"
                       />
@@ -135,7 +145,7 @@ export default async function Profile({
                     className="mt-2 flex justify-center rounded-lg border border-dashed border-white/25 px-6 py-10 bg-cover bg-center"
                     style={{
                       backgroundImage: coverPreview
-                        ? `url(${coverPreview})`
+                        ? `url('${coverPreview}')`
                         : "none",
                     }}
                   >
