@@ -41,7 +41,7 @@ export default async function Navbar() {
               href="/dashboard"
               className="flex h-9 items-center justify-center rounded-xl bg-indigo-600 px-4 shadow-[0_0_20px_rgba(79,70,229,0.4)]"
             >
-              <span className="text-lg font-bold tracking-tight">X</span>
+              <span className="text-lg font-bold tracking-tight">Y</span>
             </Link>
 
             {/* Navigation Links */}
