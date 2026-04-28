@@ -79,6 +79,7 @@ export async function updateProfile(formData: FormData) {
   revalidatePath("/profile");
   redirect("/dashboard");
 }
+
 export async function editProfile(formData: FormData) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);

@@ -18,6 +18,16 @@ export default function VisualIdentity({ profile }: { profile: any }) {
   };
   return (
     <section className="grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-3">
+      <input
+        type="hidden"
+        name="current-avatar-url"
+        value={profile?.avatar_url || ""}
+      />
+      <input
+        type="hidden"
+        name="current-cover-url"
+        value={profile?.cover_url || ""}
+      />
       <div>
         <h2 className="text-base font-semibold text-white">Visual Identity</h2>
         <p className="mt-1 text-sm text-zinc-500">
@@ -106,16 +116,6 @@ export default function VisualIdentity({ profile }: { profile: any }) {
           </div>
         </div>
       </div>
-      <input
-        type="hidden"
-        name="current-avatar-url"
-        value={profile?.avatar_url || ""}
-      />
-      <input
-        type="hidden"
-        name="current-cover-url"
-        value={profile?.cover_url || ""}
-      />
     </section>
   );
 }
