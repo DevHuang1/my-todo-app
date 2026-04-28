@@ -39,10 +39,12 @@ export default async function Navbar() {
           <div className="flex items-center gap-8">
             <Link
               href="/dashboard"
-              className="flex size-9 items-center justify-center rounded-xl bg-indigo-600 shadow-[0_0_20px_rgba(79,70,229,0.4)]"
+              className="flex h-9 items-center justify-center rounded-xl bg-indigo-600 px-4 shadow-[0_0_20px_rgba(79,70,229,0.4)]"
             >
-              <span className="text-xl font-bold">Y</span>
+              <span className="text-lg font-bold tracking-tight">Todo</span>
             </Link>
+
+            {/* Navigation Links */}
             <div className="hidden md:block">
               <div className="flex items-center gap-1">
                 <Link
@@ -51,7 +53,18 @@ export default async function Navbar() {
                 >
                   Dashboard
                 </Link>
-                {/* Add other links here */}
+                <Link
+                  href="/dashboard"
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 hover:bg-white/5 hover:text-white"
+                >
+                  Courses
+                </Link>
+                <Link
+                  href="/dashboard"
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 hover:bg-white/5 hover:text-white"
+                >
+                  Todos
+                </Link>
               </div>
             </div>
           </div>
