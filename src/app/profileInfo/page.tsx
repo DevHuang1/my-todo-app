@@ -1,8 +1,25 @@
+"use client";
 import { PhotoIcon, UserCircleIcon } from "@heroicons/react/24/solid";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { updateProfile } from "../profileData/actions";
+import { useState } from "react";
 
-export default function Profile() {
+export default function Profile({ initialProfile }: { initialProfile: any }) {
+  const [avatarPreview, setAvatarPreview] = useState(
+    initialProfile?.avatar_url,
+  );
+  const [coverPreview, setCoverPreview] = useState(initialProfile?.cover_url);
+  const handleImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: "avatar" | "cover",
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      if (type === "avatar") setAvatarPreview(url);
+      if (type === "cover") setCoverPreview(url);
+    }
+  };
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
@@ -70,21 +87,23 @@ export default function Profile() {
                     Photo
                   </label>
                   <div className="mt-2 flex items-center gap-x-3">
-                    <UserCircleIcon
-                      aria-hidden="true"
-                      className="size-12 text-gray-300 dark:text-gray-500"
-                    />
-                    <label
-                      htmlFor="avatar-upload"
-                      className="cursor-pointer rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs outline outline-1 outline-gray-300 hover:bg-gray-50 dark:bg-white/10 dark:text-white dark:outline-white/5 dark:hover:bg-white/20"
-                    >
+                    {avatarPreview ? (
+                      <img
+                        src={avatarPreview}
+                        className="size-12 rounded-full object-cover"
+                        alt="Avatar"
+                      />
+                    ) : (
+                      <UserCircleIcon className="size-12 text-gray-500" />
+                    )}
+                    <label className="cursor-pointer rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/20">
                       <span>Change</span>
                       <input
-                        id="avatar-upload"
-                        name="avatar-url"
                         type="file"
-                        accept="image/*"
+                        name="avatar-url"
                         className="sr-only"
+                        accept="image/*"
+                        onChange={(e) => handleImageChange(e, "avatar")}
                       />
                     </label>
                   </div>
@@ -96,31 +115,34 @@ export default function Profile() {
                   >
                     Cover photo
                   </label>
-                  <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10 dark:border-white/25">
-                    <div className="text-center">
-                      <PhotoIcon
-                        aria-hidden="true"
-                        className="mx-auto size-12 text-gray-300 dark:text-gray-600"
-                      />
-                      <div className="mt-4 flex text-sm/6 text-gray-600 dark:text-gray-400">
-                        <label
-                          htmlFor="cover-upload"
-                          className="relative cursor-pointer rounded-md bg-transparent font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
-                        >
-                          <span>Upload a file</span>
+                  <div
+                    className="mt-2 flex justify-center rounded-lg border border-dashed border-white/25 px-6 py-10 bg-cover bg-center"
+                    style={{
+                      backgroundImage: coverPreview
+                        ? `url(${coverPreview})`
+                        : "none",
+                    }}
+                  >
+                    <div
+                      className={`text-center ${coverPreview ? "bg-black/40 p-4 rounded-lg backdrop-blur-sm" : ""}`}
+                    >
+                      {!coverPreview && (
+                        <PhotoIcon className="mx-auto size-12 text-gray-500" />
+                      )}
+                      <div className="mt-4 flex text-sm text-gray-400">
+                        <label className="relative cursor-pointer rounded-md font-semibold text-indigo-400 hover:text-indigo-300">
+                          <span>
+                            {coverPreview ? "Change cover" : "Upload a file"}
+                          </span>
                           <input
-                            id="cover-upload"
-                            name="cover-url"
                             type="file"
-                            accept="image/*"
+                            name="cover-url"
                             className="sr-only"
+                            accept="image/*"
+                            onChange={(e) => handleImageChange(e, "cover")}
                           />
                         </label>
-                        <p className="pl-1">or drag and drop</p>
                       </div>
-                      <p className="text-xs/5 text-gray-600 dark:text-gray-400">
-                        PNG, JPG, GIF up to 10MB
-                      </p>
                     </div>
                   </div>
                 </div>

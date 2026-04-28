@@ -20,7 +20,10 @@ async function uploadImage(
     .form(bucket)
     .upload(filePath, file);
 
-  if (uploadError) throw uploadError;
+  if (uploadError) {
+    console.error("Storage Upload Error:", uploadError.message);
+    return null;
+  }
   const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
   return data.publicUrl;
 }
@@ -59,6 +62,7 @@ export async function updateProfile(formData: FormData) {
   const { error } = await supabase.from("profiles").upsert(profileData);
   if (error) throw error;
   revalidatePath("/dashboard");
+  revalidatePath("/profile");
   redirect("/dashboard");
 }
 export async function editProfile(formData: FormData) {
