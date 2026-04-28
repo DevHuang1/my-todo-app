@@ -87,11 +87,16 @@ export async function editProfile(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("User not authenticated");
+
+  // Files
   const avatarFile = formData.get("avatar-url") as File;
   const coverFile = formData.get("cover-url") as File;
+
+  // Hidden inputs
   const currentAvatar = formData.get("current-avatar-url") as string;
   const currentCover = formData.get("current-cover-url") as string;
 
+  // Uploads
   const newAvatarUrl = await uploadImage(
     supabase,
     avatarFile,
@@ -100,20 +105,18 @@ export async function editProfile(formData: FormData) {
   );
   const newCoverUrl = await uploadImage(supabase, coverFile, "covers", user.id);
 
-  const firstName = formData.get("first-name") as string;
-  const lastName = formData.get("last-name") as string;
+  const firstName = (formData.get("first-name") as string) || "";
+  const lastName = (formData.get("last-name") as string) || "";
 
   const profileData: any = {
-    username: formData.get("username"),
+    username: (formData.get("username") as string)?.trim() || null,
     full_name: `${firstName} ${lastName}`.trim(),
-    about: formData.get("about"),
-    country: formData.get("country"),
-    street_address: formData.get("street-address"),
-    city: formData.get("city"),
-    state_region: formData.get("region"),
-    postal_code: formData.get("postal-code"),
+    about: (formData.get("about") as string)?.trim() || null,
+    street_address: (formData.get("street-address") as string)?.trim() || null,
+    city: (formData.get("city") as string)?.trim() || null,
+    state_region: (formData.get("region") as string)?.trim() || null,
+    postal_code: (formData.get("postal-code") as string)?.trim() || null,
     updated_at: new Date().toISOString(),
-    // Logic: Use new upload if present, otherwise keep current
     avatar_url: newAvatarUrl || currentAvatar,
     cover_url: newCoverUrl || currentCover,
   };
@@ -123,9 +126,11 @@ export async function editProfile(formData: FormData) {
     .update(profileData)
     .eq("id", user.id);
 
-  if (error) throw error;
+  if (error) {
+    console.error("Database Update Error:", error.message);
+    throw error;
+  }
 
   revalidatePath("/", "layout");
-  revalidatePath("/profile");
-  revalidatePath("/dashboard");
+  redirect("/dashboard");
 }

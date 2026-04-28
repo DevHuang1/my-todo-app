@@ -1,5 +1,3 @@
-// components/Navbar.tsx
-import { createClient } from "@/utils/supabase/server";
 import {
   Disclosure,
   Menu,
@@ -8,25 +6,27 @@ import {
   MenuItems,
 } from "@headlessui/react";
 
+import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import Link from "next/link";
+
+export const dynamic = "force-dynamic";
 
 export default async function Navbar() {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("*")
+    .select("avatar_url, username")
     .eq("id", user?.id)
     .single();
-
-  const displayName = profile?.username || "User";
+  const displayName = profile?.username || "user";
   const userImage =
     profile?.avatar_url || "https://www.gravatar.com/avatar/?d=mp";
-
   return (
     <Disclosure
       as="nav"
