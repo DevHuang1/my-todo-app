@@ -47,3 +47,12 @@ export async function loginUser(formData: FormData) {
   if (error) redirect("/login?error=invalid-credentials");
   redirect("/profileInfo");
 }
+
+export async function signOut() {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    console.error("Error signing out:", error.message);
+  }
+}

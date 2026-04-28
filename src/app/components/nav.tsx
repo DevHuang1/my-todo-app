@@ -9,6 +9,7 @@ import {
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import { signOut } from "../lib/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -98,7 +99,8 @@ export default async function Navbar() {
                   </MenuItem>
                   <MenuItem>
                     <Link
-                      href="/auth/signout"
+                      href="/login"
+                      onClick={signOut}
                       className="flex w-full items-center rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-white/5 hover:text-white"
                     >
                       Sign out
