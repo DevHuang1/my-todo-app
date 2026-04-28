@@ -106,6 +106,16 @@ export default function VisualIdentity({ profile }: { profile: any }) {
           </div>
         </div>
       </div>
+      <input
+        type="hidden"
+        name="current-avatar-url"
+        value={profile?.avatar_url || ""}
+      />
+      <input
+        type="hidden"
+        name="current-cover-url"
+        value={profile?.cover_url || ""}
+      />
     </section>
   );
 }

@@ -89,9 +89,17 @@ export async function editProfile(formData: FormData) {
   if (!user) throw new Error("User not authenticated");
   const avatarFile = formData.get("avatar-url") as File;
   const coverFile = formData.get("cover-url") as File;
+  const currentAvatar = formData.get("current-avatar-url") as string;
+  const currentCover = formData.get("current-cover-url") as string;
 
-  const avatarUrl = await uploadImage(supabase, avatarFile, "avatars", user.id);
-  const coverUrl = await uploadImage(supabase, coverFile, "covers", user.id);
+  const newAvatarUrl = await uploadImage(
+    supabase,
+    avatarFile,
+    "avatars",
+    user.id,
+  );
+  const newCoverUrl = await uploadImage(supabase, coverFile, "covers", user.id);
+
   const firstName = formData.get("first-name") as string;
   const lastName = formData.get("last-name") as string;
 
@@ -105,9 +113,10 @@ export async function editProfile(formData: FormData) {
     state_region: formData.get("region"),
     postal_code: formData.get("postal-code"),
     updated_at: new Date().toISOString(),
+    // Logic: Use new upload if present, otherwise keep current
+    avatar_url: newAvatarUrl || currentAvatar,
+    cover_url: newCoverUrl || currentCover,
   };
-  if (avatarUrl) profileData.avatar_url = avatarUrl;
-  if (coverUrl) profileData.cover_url = coverUrl;
 
   const { error } = await supabase
     .from("profiles")
