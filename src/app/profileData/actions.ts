@@ -11,7 +11,9 @@ async function uploadImage(
   bucket: string,
   userId: string,
 ) {
-  if (!file || file.size === 0 || typeof file === "string") return null;
+  if (!file || !(file instanceof File) || file.size === 0) {
+    return null;
+  }
   const fileExt = file.name.split(".").pop();
   const fileName = `${userId}-${Math.random()}.${fileExt}`;
   const filePath = `${fileName}`;

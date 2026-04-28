@@ -46,7 +46,7 @@ export default function VisualIdentity({ profile }: { profile: any }) {
             className="relative h-44 rounded-2xl bg-zinc-900 border border-white/10 overflow-hidden bg-cover bg-center group"
             style={{
               backgroundImage: previews.cover
-                ? `url(${previews.cover})`
+                ? `url('${previews.cover}')`
                 : "none",
             }}
           >

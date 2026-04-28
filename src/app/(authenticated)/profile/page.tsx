@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { editProfile } from "../../profileData/actions";
 import Link from "next/link";
 import VisualIdentity from "@/app/components/visualidentity";
+import { redirect } from "next/navigation";
 
 export default async function EditProfile() {
   const cookieStore = await cookies();
@@ -11,14 +12,20 @@ export default async function EditProfile() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const { data: profile } = await supabase
+  if (!user) {
+    redirect("/login");
+  }
+  const { data: profile, error } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", user?.id)
+    .eq("id", user.id)
     .single();
 
   const [firstName, ...lastNameParts] = (profile?.full_name || "").split(" ");
   const lastName = lastNameParts.join(" ");
+  if (error) {
+    console.error("Profile Fetch Error:", error.message);
+  }
   return (
     <main className="min-h-screen bg-[#09090b] text-zinc-200">
       <div className="max-w-4xl mx-auto py-12 px-6 lg:px-8">
