@@ -40,26 +40,37 @@ export async function updateProfile(formData: FormData) {
   const avatarUrl = await uploadImage(supabase, avatarFile, "avatars", user.id);
   const coverFile = formData.get("cover-url") as File;
   const coverUrl = await uploadImage(supabase, coverFile, "covers", user.id);
+
+  const username = formData.get("username") as string;
   const firstName = formData.get("first-name") as string;
   const lastName = formData.get("last-name") as string;
+  const about = formData.get("about") as string;
+  const streetAddress = formData.get("street-address") as string;
+  const city = formData.get("city") as string;
+  const region = formData.get("region") as string;
+  const postalCode = formData.get("postal-code") as string;
+  const country = formData.get("country") as string;
 
-  const profileData: any = {
-    id: user.id,
-    username: formData.get("username"),
-    full_name: `${firstName} ${lastName}`.trim(),
-    about: formData.get("about"),
-    country: formData.get("country"),
-    street_address: formData.get("street-address"),
-    city: formData.get("city"),
-    state_region: formData.get("region"),
-    language: formData.get("language") || "English",
-    timezone: formData.get("timezone") || "UTC",
-    postal_code: formData.get("postal-code"),
-    updated_at: new Date().toISOString(),
-  };
+  const profileData: any = { id: user.id };
+
+  if (username?.trim()) profileData.username = username;
+
+  if (firstName?.trim() || lastName?.trim()) {
+    profileData.full_name = `${firstName || ""} ${lastName || ""}`.trim();
+  }
+
+  if (about?.trim()) profileData.about = about;
+  if (streetAddress?.trim()) profileData.street_address = streetAddress;
+  if (city?.trim()) profileData.city = city;
+  if (region?.trim()) profileData.state_region = region;
+  if (postalCode?.trim()) profileData.postal_code = postalCode;
+  if (country?.trim()) profileData.country = country;
+
+  profileData.updated_at = new Date().toISOString();
   if (avatarUrl) {
     profileData.avatar_url = avatarUrl;
   }
+
   if (coverUrl) profileData.cover_url = coverUrl;
   const { error } = await supabase.from("profiles").upsert(profileData);
   if (error) throw error;

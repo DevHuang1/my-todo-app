@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { editProfile } from "../../profileData/actions";
 import Link from "next/link";
+import VisualIdentity from "@/app/components/visualidentity";
 
 export default async function EditProfile() {
   const cookieStore = await cookies();
@@ -18,32 +19,24 @@ export default async function EditProfile() {
 
   const [firstName, ...lastNameParts] = (profile?.full_name || "").split(" ");
   const lastName = lastNameParts.join(" ");
-
   return (
     <main className="min-h-screen bg-[#09090b] text-zinc-200">
       <div className="max-w-4xl mx-auto py-12 px-6 lg:px-8">
-        {/* Header */}
         <div className="mb-10 border-b border-white/5 pb-8">
           <h1 className="text-3xl font-bold tracking-tight text-white">
             Profile Settings
           </h1>
-          <p className="mt-2 text-zinc-400">
-            Update your presence and personal information on the platform.
-          </p>
         </div>
 
         <form action={editProfile} className="space-y-12">
-          {/* Section 1: Visual Identity */}
-          <section className="grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-3">
+          {/* Render the Client Component for Images/Username */}
+          <VisualIdentity profile={profile} />
+          <section className="grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-3 pt-10 border-t border-white/5">
             <div>
               <h2 className="text-base font-semibold text-white">
-                Visual Identity
+                Personal Information
               </h2>
-              <p className="mt-1 text-sm text-zinc-500">
-                Your profile's public appearance.
-              </p>
             </div>
-
             <div className="md:col-span-2 space-y-8">
               {/* Note: You should wrap the avatar/cover inputs in a Client Component for previews */}
               <div className="space-y-4">

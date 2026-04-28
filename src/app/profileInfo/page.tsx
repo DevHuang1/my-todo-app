@@ -3,8 +3,15 @@ import { PhotoIcon, UserCircleIcon } from "@heroicons/react/24/solid";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { updateProfile } from "../profileData/actions";
 import { useState } from "react";
+import { cookies } from "next/headers";
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 
-export default function Profile({ initialProfile }: { initialProfile: any }) {
+export default async function Profile({
+  initialProfile,
+}: {
+  initialProfile: any;
+}) {
   const [avatarPreview, setAvatarPreview] = useState(
     initialProfile?.avatar_url,
   );
@@ -20,6 +27,20 @@ export default function Profile({ initialProfile }: { initialProfile: any }) {
       if (type === "cover") setCoverPreview(url);
     }
   };
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("username") // Just check if a key field exists
+    .eq("id", user?.id)
+    .single();
+  if (profile?.username) {
+    redirect("/dashboard");
+  }
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
