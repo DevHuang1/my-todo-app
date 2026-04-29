@@ -31,7 +31,6 @@ export default function Dashboard({ profile }: { profile: any }) {
               </div>
 
               <div className="rounded-2xl border border-white/5 bg-zinc-900/50 p-1">
-                {/* Example Task Item */}
                 <div className="flex items-center gap-4 rounded-xl p-4 hover:bg-white/[0.02] transition-colors group">
                   <div className="flex size-6 items-center justify-center rounded-md border border-white/10 bg-zinc-900 group-hover:border-indigo-500/50">
                     <div className="size-2 rounded-full bg-transparent" />
@@ -44,7 +43,6 @@ export default function Dashboard({ profile }: { profile: any }) {
                   </div>
                 </div>
 
-                {/* Add more task items here */}
                 <div className="h-px bg-white/5 mx-4" />
 
                 <div className="flex items-center gap-4 rounded-xl p-4 hover:bg-white/[0.02] transition-colors group">
