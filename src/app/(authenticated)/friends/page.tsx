@@ -1,4 +1,4 @@
-"use client";
+"use server";
 import { createClient } from "@/utils/supabase/server";
 import FriendsPage from "@/app/components/friendCom";
 import { cookies } from "next/headers";
