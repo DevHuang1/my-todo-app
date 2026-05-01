@@ -21,7 +21,6 @@ export default function Dashboard({
   const router = useRouter();
   const handleAddTask = async (e: React.BaseSyntheticEvent) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
 
     const { data, error } = await supabase
       .from("tasks")
@@ -43,6 +42,34 @@ export default function Dashboard({
       setDueLabel("");
     } else {
       console.error("Supabase error", error);
+    }
+  };
+  const handleToggleTask = async (id: string, currentStatus: boolean) => {
+    const newStatus = !currentStatus;
+
+    setTasks(
+      tasks.map((t) => (t.id === id ? { ...t, is_completed: newStatus } : t)),
+    );
+    const { error } = await supabase
+      .from("tasks")
+      .update({ is_completed: newStatus })
+      .eq("id", id);
+    if (error) {
+      console.error("Error toggling task", error);
+      setTasks(
+        tasks.map((t) =>
+          t.id === id ? { ...t, is_completed: currentStatus } : t,
+        ),
+      );
+    }
+  };
+  const deleteTask = async (id: string) => {
+    setTasks(tasks.filter((t) => t.id === id));
+
+    const { error } = await supabase.from("tasks").delete().eq("id", id);
+    if (error) {
+      console.error("Error deleting task", error);
+      router.refresh();
     }
   };
 
@@ -189,15 +216,20 @@ export default function Dashboard({
                 {tasks && tasks.length > 0 ? (
                   tasks.map((task, index) => (
                     <div key={task.id}>
-                      <div className="flex items-center gap-4 rounded-xl p-4 hover:bg-white/[0.02] transition-colors group">
+                      <div
+                        onClick={() =>
+                          handleToggleTask(task.id, task.is_completed)
+                        }
+                        className="flex items-center gap-4 rounded-xl p-4 hover:bg-white/[0.02] transition-colors group"
+                      >
                         {/* Custom Checkbox UI */}
                         <div
                           className={`flex size-6 items-center justify-center rounded-md border transition-colors bg-zinc-900 
-              ${
-                task.is_completed
-                  ? "border-indigo-500 bg-indigo-500/10"
-                  : "border-white/10 group-hover:border-indigo-500/50"
-              }`}
+        ${
+          task.is_completed
+            ? "border-indigo-500 bg-indigo-500/10"
+            : "border-white/10 group-hover:border-indigo-500/50"
+        }`}
                         >
                           <div
                             className={`size-2 rounded-full transition-all ${task.is_completed ? "bg-indigo-500" : "bg-transparent"}`}
@@ -216,7 +248,28 @@ export default function Dashboard({
                           </p>
                         </div>
                       </div>
-
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteTask(task.id);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 p-2 text-zinc-500 hover:text-rose-500 transition-all"
+                        title="Delete task"
+                      >
+                        <svg
+                          className="size-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </button>
                       {/* Render divider only between items, not after the last one */}
                       {index < tasks.length - 1 && (
                         <div className="h-px bg-white/5 mx-4" />
