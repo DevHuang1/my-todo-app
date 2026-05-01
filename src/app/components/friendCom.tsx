@@ -17,17 +17,16 @@ export default function FriendsPage({ profile }: { profile: any }) {
         .from("friends")
         .select(
           `
-        id,
-        status,
-        user_id,
-        friend_id,
-        sender:user_id (id, full_name, avatar_url),
-        receiver:friend_id (id, full_name, avatar_url)
-      `,
+    id,
+    status,
+    user_id,
+    friend_id,
+    sender:profiles!friends_user_id_fkey (id, full_name, avatar_url),
+    receiver:profiles!friends_friend_id_fkey (id, full_name, avatar_url)
+  `,
         )
         .or(`user_id.eq.${profile.id},friend_id.eq.${profile.id}`)
         .eq("status", "accepted");
-
       if (!error && data) {
         const friendProfiles = data.map((relation: any) => {
           return relation.user_id === profile.id

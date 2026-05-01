@@ -29,17 +29,16 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
       .from("friends")
       .select(
         `
-      id,
-      sender:profiles!friends_user_id_fkey (
-        id, 
-        full_name, 
-        avatar_url
-      )
-    `,
+    id,
+    sender:profiles!friends_user_id_fkey (
+      id, 
+      full_name, 
+      avatar_url
+    )
+  `,
       )
       .eq("friend_id", user.id)
       .eq("status", "pending");
-
     if (error) {
       console.error("Fetch Error:", error.message);
     } else {
