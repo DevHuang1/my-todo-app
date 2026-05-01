@@ -115,14 +115,54 @@ export default function Dashboard({
                           <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
                             Due Date / Label
                           </label>
-                          <input
-                            required
-                            className="mt-1 w-full rounded-lg border border-white/5 bg-zinc-950 px-4 py-2 text-sm text-white outline-none focus:border-indigo-500/50"
-                            placeholder="e.g. Due in 2 hours"
-                            value={dueLabel}
-                            name="taskDue"
-                            onChange={(e) => setDueLabel(e.target.value)}
-                          />
+                          <div className="relative mt-1">
+                            <select
+                              required
+                              value={dueLabel}
+                              name="taskDue"
+                              onChange={(e) => setDueLabel(e.target.value)}
+                              className="w-full appearance-none rounded-lg border border-white/5 bg-zinc-950 px-4 py-2 text-sm text-white outline-none focus:border-indigo-500/50 cursor-pointer"
+                            >
+                              <option value="" disabled className="bg-zinc-900">
+                                Select timing...
+                              </option>
+                              <option
+                                value="Urgent"
+                                className="bg-zinc-900 text-rose-400"
+                              >
+                                Urgent
+                              </option>
+                              <option
+                                value="Due in 2 hours"
+                                className="bg-zinc-900"
+                              >
+                                Due in 2 hours
+                              </option>
+                              <option value="Today" className="bg-zinc-900">
+                                Today
+                              </option>
+                              <option value="This Week" className="bg-zinc-900">
+                                This Week
+                              </option>
+                            </select>
+
+                            {/* Custom Chevron Arrow */}
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-zinc-500">
+                              <svg
+                                className="size-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M19 9l-7 7-7-7"
+                                />
+                              </svg>
+                            </div>
+                          </div>
                         </div>
 
                         <div className="flex gap-3 pt-2">
