@@ -29,7 +29,7 @@ export default function Dashboard({
         {
           user_id: profile.id,
           title: title,
-          due_label: dueLabel,
+          due_date: dueLabel,
           is_completed: false,
         },
       ])
