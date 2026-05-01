@@ -24,18 +24,28 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
 
   const fetchRequests = async () => {
     if (!user?.id) return;
+
     const { data, error } = await supabase
       .from("friends")
       .select(
         `
       id,
-      sender:user_id (id, full_name, avatar_url)
+      sender:profiles!friends_user_id_fkey (
+        id, 
+        full_name, 
+        avatar_url
+      )
     `,
       )
       .eq("friend_id", user.id)
       .eq("status", "pending");
 
-    if (!error) setNotifications(data || []);
+    if (error) {
+      console.error("Fetch Error:", error.message);
+    } else {
+      console.log("Notifications found:", data);
+      setNotifications(data || []);
+    }
   };
   useEffect(() => {
     if (!user?.id) return;
