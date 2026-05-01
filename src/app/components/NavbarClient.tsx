@@ -38,25 +38,25 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
     if (!error) setNotifications(data || []);
   };
   useEffect(() => {
-    if (user?.id) fetchRequests();
+    if (!user?.id) return;
 
-    // Realtime listener for new friend requests
-    const channel = supabase
-      .channel("schema-db-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "friends",
-          filter: `friend_id=eq.${user.id}`,
-        },
-        () => fetchRequests(),
-      )
-      .subscribe();
+    fetchRequests();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        console.log("Tab focused: Refreshing notifications...");
+        fetchRequests();
+      }
+    };
+
+    const interval = setInterval(() => {
+      fetchRequests();
+    }, 60000);
+
+    window.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      supabase.removeChannel(channel);
+      window.removeEventListener("visibilitychange", handleVisibilityChange);
+      clearInterval(interval);
     };
   }, [user.id]);
   const handleRequest = async (requestId: string, accept: boolean) => {
