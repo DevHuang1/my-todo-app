@@ -43,6 +43,12 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
                     >
                       Courses
                     </Link>
+                    <Link
+                      href="/friends"
+                      className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 hover:bg-white/5 hover:text-white"
+                    >
+                      Friends
+                    </Link>
                   </div>
                 </div>
               </div>
