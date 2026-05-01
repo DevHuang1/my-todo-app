@@ -3,7 +3,7 @@
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
+import { motion, AnimatePresence } from "framer-motion";
 export default function Dashboard({
   profile,
   tasks: initialTasks,
@@ -64,7 +64,7 @@ export default function Dashboard({
     }
   };
   const deleteTask = async (id: string) => {
-    setTasks(tasks.filter((t) => t.id === id));
+    setTasks(tasks.filter((t) => t.id !== id));
 
     const { error } = await supabase.from("tasks").delete().eq("id", id);
     if (error) {
@@ -213,74 +213,85 @@ export default function Dashboard({
                 </div>
               )}
               <div className="rounded-2xl border border-white/5 bg-zinc-900/50 p-1">
-                {tasks && tasks.length > 0 ? (
-                  tasks.map((task, index) => (
-                    <div key={task.id}>
-                      <div
-                        onClick={() =>
-                          handleToggleTask(task.id, task.is_completed)
-                        }
-                        className="flex items-center gap-4 rounded-xl p-4 hover:bg-white/[0.02] transition-colors group"
-                      >
-                        {/* Custom Checkbox UI */}
-                        <div
-                          className={`flex size-6 items-center justify-center rounded-md border transition-colors bg-zinc-900 
-        ${
-          task.is_completed
-            ? "border-indigo-500 bg-indigo-500/10"
-            : "border-white/10 group-hover:border-indigo-500/50"
-        }`}
-                        >
-                          <div
-                            className={`size-2 rounded-full transition-all ${task.is_completed ? "bg-indigo-500" : "bg-transparent"}`}
-                          />
-                        </div>
-
-                        {/* Task Content */}
-                        <div className="flex-1">
-                          <p
-                            className={`text-sm font-medium transition-colors ${task.is_completed ? "text-zinc-500 line-through" : "text-zinc-200"}`}
+                <div className="flex flex-col">
+                  <AnimatePresence mode="popLayout">
+                    {tasks &&
+                    tasks.filter((t) => !t.is_completed).length > 0 ? (
+                      tasks
+                        .filter((task) => !task.is_completed)
+                        .map((task) => (
+                          <motion.div
+                            key={task.id}
+                            layout // This makes the other tasks "snap" upward smoothly
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{
+                              opacity: 0,
+                              scale: 0.95,
+                              filter: "blur(4px)",
+                            }}
+                            transition={{ duration: 0.2 }}
+                            className="group border-b border-white/5 last:border-0"
                           >
-                            {task.title}
-                          </p>
-                          <p className="text-xs text-zinc-500">
-                            {task.due_label}
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteTask(task.id);
-                        }}
-                        className="opacity-0 group-hover:opacity-100 p-2 text-zinc-500 hover:text-rose-500 transition-all"
-                        title="Delete task"
+                            <div
+                              onClick={() =>
+                                handleToggleTask(task.id, task.is_completed)
+                              }
+                              className="flex items-center gap-4 p-4 cursor-pointer hover:bg-white/[0.02] transition-colors"
+                            >
+                              {/* Custom Checkbox UI */}
+                              <div className="flex size-6 items-center justify-center rounded-md border border-white/10 bg-zinc-900 group-hover:border-indigo-500/50">
+                                <div className="size-2 rounded-full bg-transparent" />
+                              </div>
+
+                              {/* Task Content */}
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-zinc-200">
+                                  {task.title}
+                                </p>
+                                {task.due_label && (
+                                  <p className="text-xs text-zinc-500">
+                                    {task.due_label}
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Delete Button */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteTask(task.id);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 p-2 text-zinc-500 hover:text-rose-500 transition-all"
+                              >
+                                <svg
+                                  className="size-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                          </motion.div>
+                        ))
+                    ) : (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="p-8 text-center text-sm text-zinc-600"
                       >
-                        <svg
-                          className="size-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                      </button>
-                      {/* Render divider only between items, not after the last one */}
-                      {index < tasks.length - 1 && (
-                        <div className="h-px bg-white/5 mx-4" />
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-8 text-center text-sm text-zinc-600">
-                    No active tasks. Take a breather!
-                  </div>
-                )}
+                        All caught up! Take a breather.
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </section>
 
