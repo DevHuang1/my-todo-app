@@ -21,8 +21,8 @@ export default function FriendsPage({ profile }: { profile: any }) {
     status,
     user_id,
     friend_id,
-    sender:profiles!friends_user_id_fkey (id, full_name, avatar_url),
-    receiver:profiles!friends_friend_id_fkey (id, full_name, avatar_url)
+    sender:profiles!user_id (id, full_name, avatar_url),
+    receiver:profiles!friend_id (id, full_name, avatar_url)
   `,
         )
         .or(`user_id.eq.${profile.id},friend_id.eq.${profile.id}`)
