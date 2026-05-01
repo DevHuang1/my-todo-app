@@ -1,4 +1,51 @@
-export default function Dashboard({ profile }: { profile: any }) {
+"use client";
+
+import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+export default function Dashboard({
+  profile,
+  tasks: initialTasks,
+  courses,
+}: {
+  profile: any;
+  tasks: any[];
+  courses: any[];
+}) {
+  const [tasks, setTasks] = useState(initialTasks);
+  const [isOpen, setIsOpen] = useState(false);
+  const [dueLabel, setDueLabel] = useState("");
+  const [title, setTitle] = useState("");
+  const supabase = createClient();
+  const router = useRouter();
+  const handleAddTask = async (e: React.BaseSyntheticEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
+    const { data, error } = await supabase
+      .from("tasks")
+      .insert([
+        {
+          user_id: profile.id,
+          title: title,
+          due_label: dueLabel,
+          is_completed: false,
+        },
+      ])
+      .select()
+      .single();
+    if (!error && data) {
+      setTasks([data, ...tasks]);
+      setIsOpen(false);
+      router.refresh();
+      setTitle("");
+      setDueLabel("");
+    } else {
+      console.error("Supabase error", error);
+    }
+  };
+
   return (
     <>
       <div className="min-h-screen bg-[#09090b] text-zinc-400">
@@ -10,7 +57,8 @@ export default function Dashboard({ profile }: { profile: any }) {
                 Dashboard
               </h1>
               <p className="text-sm text-zinc-500">
-                Welcome back. Here is what's on your plate today.
+                Welcome back {profile?.full_name || "User"}. Here is what's on
+                your plate today.
               </p>
             </div>
           </div>
@@ -25,39 +73,121 @@ export default function Dashboard({ profile }: { profile: any }) {
                   <span className="size-2 rounded-full bg-indigo-500 shadow-[0_0_8px_#6366f1]" />
                   Active Tasks
                 </h2>
-                <button className="text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
+                <button
+                  onClick={() => setIsOpen(true)}
+                  className="text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
+                >
                   + New Task
                 </button>
               </div>
+              {isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                  {/* Backdrop */}
+                  <div
+                    className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    onClick={() => setIsOpen(false)}
+                  />
 
+                  {/* Modal Content */}
+                  <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl">
+                    <div className="p-6">
+                      <h3 className="text-lg font-semibold text-white mb-4">
+                        Create New Task
+                      </h3>
+
+                      <form onSubmit={handleAddTask} className="space-y-4">
+                        <div>
+                          <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                            Task Title
+                          </label>
+                          <input
+                            autoFocus
+                            required
+                            className="mt-1 w-full rounded-lg border border-white/5 bg-zinc-950 px-4 py-2 text-sm text-white outline-none focus:border-indigo-500/50"
+                            placeholder="e.g. Finish Supabase Policies"
+                            value={title}
+                            name="taskTitle"
+                            onChange={(e) => setTitle(e.target.value)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                            Due Date / Label
+                          </label>
+                          <input
+                            required
+                            className="mt-1 w-full rounded-lg border border-white/5 bg-zinc-950 px-4 py-2 text-sm text-white outline-none focus:border-indigo-500/50"
+                            placeholder="e.g. Due in 2 hours"
+                            value={dueLabel}
+                            name="taskDue"
+                            onChange={(e) => setDueLabel(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                          <button
+                            type="button"
+                            onClick={() => setIsOpen(false)}
+                            className="flex-1 rounded-lg border border-white/5 bg-zinc-800 py-2 text-sm font-medium text-zinc-400 hover:bg-zinc-700 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            className="flex-1 rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.4)] transition-all"
+                          >
+                            Create Task
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="rounded-2xl border border-white/5 bg-zinc-900/50 p-1">
-                <div className="flex items-center gap-4 rounded-xl p-4 hover:bg-white/[0.02] transition-colors group">
-                  <div className="flex size-6 items-center justify-center rounded-md border border-white/10 bg-zinc-900 group-hover:border-indigo-500/50">
-                    <div className="size-2 rounded-full bg-transparent" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-zinc-200">
-                      Finish Supabase Storage Policies
-                    </p>
-                    <p className="text-xs text-zinc-500">Due in 2 hours</p>
-                  </div>
-                </div>
+                {tasks && tasks.length > 0 ? (
+                  tasks.map((task, index) => (
+                    <div key={task.id}>
+                      <div className="flex items-center gap-4 rounded-xl p-4 hover:bg-white/[0.02] transition-colors group">
+                        {/* Custom Checkbox UI */}
+                        <div
+                          className={`flex size-6 items-center justify-center rounded-md border transition-colors bg-zinc-900 
+              ${
+                task.is_completed
+                  ? "border-indigo-500 bg-indigo-500/10"
+                  : "border-white/10 group-hover:border-indigo-500/50"
+              }`}
+                        >
+                          <div
+                            className={`size-2 rounded-full transition-all ${task.is_completed ? "bg-indigo-500" : "bg-transparent"}`}
+                          />
+                        </div>
 
-                <div className="h-px bg-white/5 mx-4" />
+                        {/* Task Content */}
+                        <div className="flex-1">
+                          <p
+                            className={`text-sm font-medium transition-colors ${task.is_completed ? "text-zinc-500 line-through" : "text-zinc-200"}`}
+                          >
+                            {task.title}
+                          </p>
+                          <p className="text-xs text-zinc-500">
+                            {task.due_label}
+                          </p>
+                        </div>
+                      </div>
 
-                <div className="flex items-center gap-4 rounded-xl p-4 hover:bg-white/[0.02] transition-colors group">
-                  <div className="flex size-6 items-center justify-center rounded-md border border-white/10 bg-zinc-900">
-                    <div className="size-2 rounded-full bg-transparent" />
+                      {/* Render divider only between items, not after the last one */}
+                      {index < tasks.length - 1 && (
+                        <div className="h-px bg-white/5 mx-4" />
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-8 text-center text-sm text-zinc-600">
+                    No active tasks. Take a breather!
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-zinc-200">
-                      Refactor Navbar Component
-                    </p>
-                    <p className="text-xs text-zinc-500">
-                      Scheduled for tomorrow
-                    </p>
-                  </div>
-                </div>
+                )}
               </div>
             </section>
 

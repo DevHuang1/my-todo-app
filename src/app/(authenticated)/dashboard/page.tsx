@@ -15,5 +15,16 @@ export default async function Dashboard() {
     .eq("id", user?.id)
     .single();
 
-  return <DashInfo profile={profile} />;
+  const { data: tasks } = await supabase
+    .from("tasks")
+    .select("*")
+    .eq("user_id", user?.id);
+  const { data: courses } = await supabase
+    .from("tasks")
+    .select("*")
+    .eq("user_id", user?.id);
+
+  return (
+    <DashInfo profile={profile} tasks={tasks || []} courses={courses || []} />
+  );
 }
