@@ -23,6 +23,7 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
   const supabase = createClient();
 
   const fetchRequests = async () => {
+    if (!user?.id) return;
     const { data, error } = await supabase
       .from("friends")
       .select(
@@ -37,7 +38,7 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
     if (!error) setNotifications(data || []);
   };
   useEffect(() => {
-    fetchRequests();
+    if (user?.id) fetchRequests();
 
     // Realtime listener for new friend requests
     const channel = supabase
