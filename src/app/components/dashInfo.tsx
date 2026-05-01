@@ -249,9 +249,9 @@ export default function Dashboard({
                                 <p className="text-sm font-medium text-zinc-200">
                                   {task.title}
                                 </p>
-                                {task.due_label && (
+                                {task.due_date && (
                                   <p className="text-xs text-zinc-500">
-                                    {task.due_label}
+                                    {task.due_date}
                                   </p>
                                 )}
                               </div>
