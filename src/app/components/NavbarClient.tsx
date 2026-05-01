@@ -11,8 +11,131 @@ import {
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import { signOut } from "../lib/actions";
-
+import { useEffect, useState } from "react";
+import { createClient } from "@/utils/supabase/client";
+import {
+  BellIcon,
+  CheckIcon,
+  XMarkIcon as CloseIcon,
+} from "@heroicons/react/24/outline";
 export default function NavbarClient({ user, displayName, userImage }: any) {
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const supabase = createClient();
+
+  const fetchRequests = async () => {
+    const { data, error } = await supabase
+      .from("friends")
+      .select(
+        `
+      id,
+      sender:user_id (id, full_name, avatar_url)
+    `,
+      )
+      .eq("friend_id", user.id)
+      .eq("status", "pending");
+
+    if (!error) setNotifications(data || []);
+  };
+  useEffect(() => {
+    fetchRequests();
+
+    // Realtime listener for new friend requests
+    const channel = supabase
+      .channel("schema-db-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "friends",
+          filter: `friend_id=eq.${user.id}`,
+        },
+        () => fetchRequests(),
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user.id]);
+  const handleRequest = async (requestId: string, accept: boolean) => {
+    if (accept) {
+      await supabase
+        .from("friends")
+        .update({ status: "accepted" })
+        .eq("id", requestId);
+    } else {
+      await supabase.from("friends").delete().eq("id", requestId);
+    }
+    setNotifications((prev) => prev.filter((n) => n.id !== requestId));
+  };
+  const NotificationMenu = ({
+    align = "right",
+  }: {
+    align?: "left" | "right";
+  }) => (
+    <Menu as="div" className="relative">
+      <MenuButton className="relative flex rounded-full p-2 text-zinc-400 hover:bg-white/5 hover:text-white transition-all">
+        <BellIcon className="size-6" />
+        {notifications.length > 0 && (
+          <span className="absolute right-1.5 top-1.5 flex size-2.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75"></span>
+            <span className="relative inline-flex size-2.5 rounded-full bg-indigo-500"></span>
+          </span>
+        )}
+      </MenuButton>
+      <MenuItems
+        className={`absolute ${align === "right" ? "right-0" : "left-0"} mt-3 w-80 origin-top-right rounded-2xl border border-white/10 bg-zinc-900 p-2 shadow-2xl outline-none backdrop-blur-xl z-[60]`}
+      >
+        <div className="px-3 py-2 border-b border-white/5 mb-2 text-xs font-bold uppercase tracking-wider text-zinc-500">
+          Notifications
+        </div>
+        {notifications.length === 0 ? (
+          <div className="py-8 text-center text-sm text-zinc-600">
+            No new requests
+          </div>
+        ) : (
+          notifications.map((noti) => (
+            <MenuItem key={noti.id}>
+              <div className="flex items-center gap-3 rounded-xl p-2 hover:bg-white/5 transition-colors">
+                <img
+                  src={
+                    noti.sender.avatar_url ||
+                    `https://ui-avatars.com/api/?name=${noti.sender.full_name}`
+                  }
+                  className="size-10 rounded-full bg-zinc-800"
+                  alt=""
+                />
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-sm font-semibold text-white truncate">
+                    {noti.sender.full_name}
+                  </p>
+                  <p className="text-[11px] text-zinc-500 text-left">
+                    wants to connect
+                  </p>
+                </div>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => handleRequest(noti.id, true)}
+                    className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white"
+                  >
+                    <CheckIcon className="size-4" />
+                  </button>
+                  <button
+                    onClick={() => handleRequest(noti.id, false)}
+                    className="p-1.5 rounded-lg bg-zinc-800 text-zinc-500 hover:bg-rose-500/20 hover:text-rose-500"
+                  >
+                    <CloseIcon className="size-4" />
+                  </button>
+                </div>
+              </div>
+            </MenuItem>
+          ))
+        )}
+      </MenuItems>
+    </Menu>
+  );
+
   return (
     <Disclosure
       as="nav"
@@ -29,6 +152,7 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
                 >
                   <span className="text-lg font-bold tracking-tight">Y</span>
                 </Link>
+                {/* Desktop Nav */}
                 <div className="hidden md:block">
                   <div className="flex items-center gap-1">
                     <Link
@@ -38,7 +162,7 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
                       Dashboard
                     </Link>
                     <Link
-                      href="/dashboard"
+                      href="/courses"
                       className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 hover:bg-white/5 hover:text-white"
                     >
                       Courses
@@ -53,9 +177,11 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
                 </div>
               </div>
 
-              <div className="flex items-center">
+              <div className="flex items-center gap-2">
+                {/* Desktop User Menu */}
                 <div className="hidden md:flex items-center gap-4">
-                  <div className="flex flex-col items-end mr-2">
+                  <NotificationMenu />
+                  <div className="flex flex-col items-end mr-2 text-right">
                     <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">
                       Welcome back
                     </span>
@@ -91,6 +217,7 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
                     </MenuItems>
                   </Menu>
                 </div>
+                {/* Mobile Button */}
                 <div className="flex md:hidden">
                   <DisclosureButton className="inline-flex items-center justify-center rounded-md p-2 text-zinc-400 hover:bg-white/5 hover:text-white">
                     {open ? (
@@ -104,6 +231,7 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
             </div>
           </div>
 
+          {/* MOBILE MENU */}
           <DisclosurePanel className="md:hidden border-t border-white/5 bg-zinc-900/90 backdrop-blur-md">
             <div className="space-y-1 px-2 pb-3 pt-2">
               <Link
@@ -112,22 +240,39 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
               >
                 Dashboard
               </Link>
+              <Link
+                href="/courses"
+                className="block rounded-md px-3 py-2 text-base font-medium text-zinc-400 hover:bg-white/5 hover:text-white"
+              >
+                Courses
+              </Link>
+              <Link
+                href="/friends"
+                className="block rounded-md px-3 py-2 text-base font-medium text-zinc-400 hover:bg-white/5 hover:text-white"
+              >
+                Friends
+              </Link>
             </div>
+
             <div className="border-t border-white/5 pb-3 pt-4 px-5">
-              <div className="flex items-center">
-                <img
-                  className="h-10 w-10 rounded-full object-cover"
-                  src={userImage}
-                  alt=""
-                />
-                <div className="ml-3">
-                  <div className="text-base font-medium text-white">
-                    {displayName}
-                  </div>
-                  <div className="text-sm font-medium text-zinc-500">
-                    {user.email}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <img
+                    className="h-10 w-10 rounded-full object-cover"
+                    src={userImage}
+                    alt=""
+                  />
+                  <div className="ml-3 text-left">
+                    <div className="text-base font-medium text-white">
+                      {displayName}
+                    </div>
+                    <div className="text-sm font-medium text-zinc-500">
+                      {user.email}
+                    </div>
                   </div>
                 </div>
+                {/* Mobile Notification Bell */}
+                <NotificationMenu align="right" />
               </div>
               <div className="mt-3 space-y-1">
                 <Link
@@ -138,7 +283,7 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
                 </Link>
                 <button
                   onClick={() => signOut()}
-                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-zinc-400 hover:bg-white/5 hover:text-white"
+                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-rose-400 hover:bg-white/5 transition-colors"
                 >
                   Sign out
                 </button>
