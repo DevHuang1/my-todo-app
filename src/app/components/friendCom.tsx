@@ -67,7 +67,12 @@ export default function FriendsPage({ profile }: { profile: any }) {
       },
     ]);
     if (error) {
-      console.error("Error sending request", error);
+      if (error.code === "23505") {
+        // Postgres code for Unique Violation
+        alert("You have already sent a request to this person!");
+      } else {
+        console.error("Error sending request", error);
+      }
     } else {
       alert("Friend request successful!");
     }
