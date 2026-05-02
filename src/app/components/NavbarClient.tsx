@@ -202,13 +202,12 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
                       </MenuButton>
                       <MenuItems className="absolute right-0 mt-3 w-48 origin-top-right rounded-xl border border-white/10 bg-zinc-900 p-1 shadow-2xl outline-none">
                         <MenuItem>
-                          <div className="group rounded-lg transition-colors data-[focus]:bg-white/5">
-                            <NavLoadingLink href="/profile">
-                              <span className="block w-full px-3 py-2 text-sm text-zinc-400 group-data-[focus]:text-white">
-                                Your Profile
-                              </span>
-                            </NavLoadingLink>
-                          </div>
+                          <NavLoadingLink
+                            href="/profile"
+                            className="flex w-full items-center px-3 py-2 text-sm text-zinc-400 data-[focus]:bg-white/10 data-[focus]:text-white rounded-lg transition-colors"
+                          >
+                            Your Profile
+                          </NavLoadingLink>
                         </MenuItem>
                         <MenuItem>
                           <button

@@ -7,9 +7,11 @@ import { useRouter } from "next/navigation";
 export default function NavLoadingLink({
   href,
   children,
+  className,
 }: {
   href: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -21,16 +23,16 @@ export default function NavLoadingLink({
       router.push(href);
     });
   };
-
+  const defaultClasses = `rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+    isPending
+      ? "text-indigo-400 bg-white/5"
+      : "text-zinc-400 hover:bg-white/5 hover:text-white"
+  }`;
   return (
     <Link
       href={href}
       onClick={handleNavigation}
-      className={`relative rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-        isPending
-          ? "text-indigo-400 bg-white/5"
-          : "text-zinc-400 hover:bg-white/5 hover:text-white"
-      }`}
+      className={className || defaultClasses} //
     >
       <span className={isPending ? "opacity-20" : "opacity-100"}>
         {children}
