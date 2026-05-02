@@ -4,6 +4,7 @@ import { editProfile } from "../../profileData/actions";
 import Link from "next/link";
 import VisualIdentity from "@/app/components/visualidentity";
 import { redirect } from "next/navigation";
+import FormSubmit from "@/app/components/formSubmit";
 
 export default async function EditProfile() {
   const cookieStore = await cookies();
@@ -121,12 +122,7 @@ export default async function EditProfile() {
             >
               Cancel
             </Link>
-            <button
-              type="submit"
-              className="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 transition-all active:scale-95"
-            >
-              Save Changes
-            </button>
+            <FormSubmit label="Save" />
           </div>
         </form>
       </div>

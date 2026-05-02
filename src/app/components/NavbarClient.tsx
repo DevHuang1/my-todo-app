@@ -19,6 +19,7 @@ import {
   XMarkIcon as CloseIcon,
 } from "@heroicons/react/24/outline";
 import LoadingOverlay from "./loadingOverlay";
+import NavLoadingLink from "./NavLoadingLink";
 export default function NavbarClient({ user, displayName, userImage }: any) {
   const [notifications, setNotifications] = useState<any[]>([]);
   const supabase = createClient();
@@ -165,24 +166,11 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
                   {/* Desktop Nav */}
                   <div className="hidden md:block">
                     <div className="flex items-center gap-1">
-                      <Link
-                        href="/dashboard"
-                        className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 hover:bg-white/5 hover:text-white"
-                      >
+                      <NavLoadingLink href="/dashboard">
                         Dashboard
-                      </Link>
-                      <Link
-                        href="/courses"
-                        className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 hover:bg-white/5 hover:text-white"
-                      >
-                        Courses
-                      </Link>
-                      <Link
-                        href="/friends"
-                        className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 hover:bg-white/5 hover:text-white"
-                      >
-                        Friends
-                      </Link>
+                      </NavLoadingLink>
+                      <NavLoadingLink href="/courses">Courses</NavLoadingLink>
+                      <NavLoadingLink href="/friends">Friends</NavLoadingLink>
                     </div>
                   </div>
                 </div>
