@@ -1,10 +1,12 @@
 "use server";
-
+type AuthResponse =
+  | { success: true; email: string; error?: never }
+  | { error: string; success?: never; email?: never };
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
-export async function registerUser(formData: FormData) {
+export async function registerUser(formData: FormData): Promise<AuthResponse> {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
@@ -22,11 +24,9 @@ export async function registerUser(formData: FormData) {
   });
   if (error) {
     console.error("Signup Error Log:", error.message);
-
-    return redirect(`/signup?error=${encodeURIComponent(error.message)}`);
   }
 
-  return redirect("/login?message=check-email-to-confirm");
+  return { success: true, email: email as string };
 }
 
 export async function loginUser(formData: FormData) {
@@ -38,12 +38,19 @@ export async function loginUser(formData: FormData) {
     string
   >;
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
   if (error) redirect("/login?error=invalid-credentials");
-  redirect("/profileInfo");
+
+  const fullName = data.user?.user_metadata?.full_name;
+
+  if (fullName) {
+    redirect("/dashboard");
+  } else {
+    redirect("/profileInfo");
+  }
 }
 
 export async function signOut() {
