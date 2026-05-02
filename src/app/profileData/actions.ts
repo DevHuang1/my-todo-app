@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 
 async function uploadImage(
   supabase: any,
-  file: File,
+  file: File | null,
   bucket: string,
   userId: string,
 ) {
