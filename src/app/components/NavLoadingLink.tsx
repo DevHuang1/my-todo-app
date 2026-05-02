@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 export default function NavLoadingLink({
   href,
   children,
+  className,
 }: {
   href: string;
   children: React.ReactNode;
