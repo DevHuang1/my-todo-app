@@ -85,7 +85,7 @@ export default async function ViewProfilePage({
                 </p>
 
                 <p className="mt-4 mx-auto text-zinc-400 text-sm max-w-sm leading-relaxed">
-                  {profile.bio || "No bio available."}
+                  {profile.about || "No bio available."}
                 </p>
 
                 {/* 3. Unfriend Button - Centered and Aligned */}
