@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import LoadingOverlay from "./loadingOverlay";
 import Toast, { ToastType } from "../components/Toast";
+import NavLoadingLink from "./NavLoadingLink";
 
 export default function FriendsPage({ profile }: { profile: any }) {
   const supabase = createClient();
@@ -16,11 +17,43 @@ export default function FriendsPage({ profile }: { profile: any }) {
     isVisible: false,
     message: "",
     type: "info" as ToastType,
+    onConfirm: undefined as (() => void) | undefined,
   });
 
   const showToast = (message: string, type: ToastType) => {
-    setToast({ isVisible: true, message, type });
-    setTimeout(() => setToast((prev) => ({ ...prev, isVisible: false })), 4000);
+    setToast({ isVisible: true, message, type, onConfirm: undefined });
+    if (type !== "confirm") {
+      setTimeout(
+        () => setToast((prev) => ({ ...prev, isVisible: false })),
+        4000,
+      );
+    }
+  };
+  const handleUnfriendClick = (friendId: string, friendName: string) => {
+    setToast({
+      isVisible: true,
+      type: "confirm",
+      message: `Unfriend ${friendName}?`,
+      onConfirm: () => executeUnfriend(friendId),
+    });
+  };
+
+  const executeUnfriend = async (friendId: string) => {
+    setIsLoading(true);
+    const { error } = await supabase
+      .from("friends")
+      .delete()
+      .or(
+        `and(user_id.eq.${profile.id},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${profile.id})`,
+      );
+
+    if (!error) {
+      setFriends((prev) => prev.filter((f) => f.id !== friendId));
+      showToast("Friend removed", "success");
+    } else {
+      showToast("Failed to remove friend", "error");
+    }
+    setIsLoading(false);
   };
   const fetchData = async () => {
     if (!profile?.id) return;
@@ -219,9 +252,23 @@ export default function FriendsPage({ profile }: { profile: any }) {
                             </span>
                           </div>
                         </div>
-                        <button className="opacity-0 group-hover:opacity-100 text-xs text-zinc-500 hover:text-white transition-all">
-                          View Profile
-                        </button>
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                          <NavLoadingLink
+                            href={`/viewprofile/${friend.id}`}
+                            className="text-[11px] font-bold text-zinc-400 hover:text-white bg-zinc-800 px-3 py-1.5 rounded-lg"
+                          >
+                            View Profile
+                          </NavLoadingLink>
+
+                          <button
+                            onClick={() =>
+                              handleUnfriendClick(friend.id, friend.full_name)
+                            }
+                            className="text-[11px] font-bold text-rose-400 hover:text-white hover:bg-rose-500/20 px-3 py-1.5 rounded-lg transition-colors"
+                          >
+                            Unfriend
+                          </button>
+                        </div>
                       </div>
                     ))
                   ) : (
