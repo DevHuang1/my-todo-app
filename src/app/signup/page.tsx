@@ -1,15 +1,48 @@
+"use client";
 import Link from "next/link";
 import { registerUser } from "../lib/actions";
 import FormSubmit from "../components/formSubmit";
+import { useRouter } from "next/navigation";
+import Toast, { ToastType } from "../components/Toast";
+import { useState } from "react";
 
 export default function SignUp({
   searchParams,
 }: {
   searchParams: { status?: string; message?: string };
 }) {
-  const isSuccess =
+  const [toastConfig, setToastConfig] = useState({
+    isVisible: false,
+    message: "",
+    type: "info" as ToastType,
+  });
+
+  const router = useRouter();
+  const isSuccessFromURL =
     searchParams.status === "success" ||
     searchParams.message === "check-email-to-confirm";
+
+  const handleSignup = async (formData: FormData) => {
+    const result = await registerUser(formData);
+
+    if (result?.error) {
+      setToastConfig({
+        isVisible: true,
+        message: result.error,
+        type: "error",
+      });
+    } else if (result?.success) {
+      setToastConfig({
+        isVisible: true,
+        message: `OTP sent to ${result.email}! Please check your inbox.`,
+        type: "success",
+      });
+
+      setTimeout(() => {
+        router.push("/login?message=check-email-to-confirm");
+      }, 3000);
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col justify-center bg-gray-900 px-6 py-12 lg:px-8">
@@ -20,8 +53,8 @@ export default function SignUp({
       </div>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        {isSuccess ? (
-          /* SUCCESS MESSAGE BOX */
+        {isSuccessFromURL ? (
+          /* SUCCESS MESSAGE BOX (After Redirect) */
           <div className="rounded-xl bg-indigo-500/10 p-6 border border-indigo-500/20 text-center animate-in fade-in zoom-in duration-300">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500/20 mb-4">
               <svg
@@ -52,7 +85,7 @@ export default function SignUp({
           </div>
         ) : (
           /* REGISTRATION FORM */
-          <form className="space-y-6" action={registerUser}>
+          <form className="space-y-6" action={handleSignup}>
             <div>
               <label className="block text-sm font-semibold text-gray-200">
                 Full Name
@@ -80,6 +113,7 @@ export default function SignUp({
                 />
               </div>
             </div>
+
             <div>
               <label className="block text-sm font-semibold text-gray-200">
                 Password
@@ -98,7 +132,7 @@ export default function SignUp({
           </form>
         )}
 
-        {!isSuccess && (
+        {!isSuccessFromURL && (
           <p className="mt-10 text-center text-sm text-gray-400">
             Already have an account?{" "}
             <Link
@@ -110,6 +144,16 @@ export default function SignUp({
           </p>
         )}
       </div>
+
+      {/* Render the Toast component */}
+      <Toast
+        isVisible={toastConfig.isVisible}
+        message={toastConfig.message}
+        type={toastConfig.type}
+        onClose={() =>
+          setToastConfig((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
     </div>
   );
 }

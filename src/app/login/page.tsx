@@ -54,7 +54,7 @@ export default function SignIn() {
         </form>
 
         <p className="mt-10 text-center text-sm text-gray-400">
-          Not a member?{" "}
+          Not a member?
           <Link
             href="/signup"
             className="font-semibold text-indigo-400 hover:text-indigo-300"
