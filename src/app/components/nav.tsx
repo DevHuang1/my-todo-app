@@ -23,7 +23,7 @@ export default async function Navbar() {
 
   return (
     <NavbarClient
-      user={{ email: user.email }}
+      user={{ id: user.id, email: user.email }}
       displayName={displayName}
       userImage={userImage}
     />
