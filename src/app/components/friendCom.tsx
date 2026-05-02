@@ -8,42 +8,45 @@ export default function FriendsPage({ profile }: { profile: any }) {
   const supabase = createClient();
   const [friends, setFriends] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  const fetchData = async () => {
+    if (!profile?.id) return;
+    setIsLoading(true);
+
+    const { data, error } = await supabase
+      .from("friends")
+      .select(
+        `
+        id,
+        status,
+        user_id,
+        friend_id,
+        sender:profiles!user_id (id, full_name, avatar_url),
+        receiver:profiles!friend_id (id, full_name, avatar_url)
+      `,
+      )
+      .or(`user_id.eq.${profile.id},friend_id.eq.${profile.id}`);
+
+    setIsLoading(false);
+
+    if (!error && data) {
+      const accepted = data
+        .filter((rel) => rel.status === "accepted")
+        .map((rel) => (rel.user_id === profile.id ? rel.receiver : rel.sender));
+      setFriends(accepted);
+
+      const pending = data.filter(
+        (rel) => rel.status === "pending" && rel.friend_id === profile.id,
+      );
+      setPendingRequests(pending);
+    }
+  };
+
   useEffect(() => {
-    const fetchFriends = async () => {
-      if (!profile?.id) return;
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from("friends")
-        .select(
-          `
-    id,
-    status,
-    user_id,
-    friend_id,
-    sender:profiles!user_id (id, full_name, avatar_url),
-    receiver:profiles!friend_id (id, full_name, avatar_url)
-  `,
-        )
-        .or(`user_id.eq.${profile.id},friend_id.eq.${profile.id}`)
-        .eq("status", "accepted");
-      setIsLoading(false);
-      if (!error && data) {
-        const friendProfiles = data.map((relation: any) => {
-          return relation.user_id === profile.id
-            ? relation.receiver
-            : relation.sender;
-        });
-
-        setFriends(friendProfiles);
-      } else if (error) {
-        console.error("Error fetching friends:", error.message);
-      }
-    };
-
-    fetchFriends();
+    fetchData();
   }, [profile?.id]);
 
   const handleSearch = async (e: React.BaseSyntheticEvent) => {
@@ -58,6 +61,19 @@ export default function FriendsPage({ profile }: { profile: any }) {
       .limit(5);
 
     if (!error) setSearchResults(data || []);
+  };
+  const handleRequest = async (requestId: string, accept: boolean) => {
+    setIsLoading(true);
+    if (accept) {
+      await supabase
+        .from("friends")
+        .update({ status: "accepted" })
+        .eq("id", requestId);
+    } else {
+      await supabase.from("friends").delete().eq("id", requestId);
+    }
+    await fetchData(); // Refresh lists
+    setIsLoading(false);
   };
   const addFriend = async (targetId: string) => {
     const { error } = await supabase.from("friends").insert([
@@ -82,66 +98,109 @@ export default function FriendsPage({ profile }: { profile: any }) {
   return (
     <>
       <LoadingOverlay isLoading={isLoading} />
-      <div className="min-h-screen bg-[#09090b] text-zinc-400">
+      <div className="min-h-screen bg-[#09090b] text-zinc-400 pb-20">
         <header className="border-b border-white/5 bg-zinc-900/50 backdrop-blur-md">
           <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
             <h1 className="text-2xl font-bold tracking-tight text-white">
               Social Circle
             </h1>
             <p className="text-sm text-zinc-500">
-              Manage your connections and find collaborators.
+              Manage connections and collaborators.
             </p>
           </div>
         </header>
 
         <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-            {/* LEFT COLUMN: Current Friends */}
-            <section className="lg:col-span-7 space-y-6">
-              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                <span className="size-2 rounded-full bg-indigo-500 shadow-[0_0_8px_#6366f1]" />
-                Your Friends
-              </h2>
+            {/* LEFT COLUMN: Friends & Requests */}
+            <section className="lg:col-span-7 space-y-10">
+              {/* 1. FRIEND REQUESTS SECTION */}
+              {pendingRequests.length > 0 && (
+                <div className="space-y-4">
+                  <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <span className="size-2 rounded-full bg-amber-500 shadow-[0_0_8px_#f59e0b]" />
+                    Friend Requests ({pendingRequests.length})
+                  </h2>
+                  <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-1">
+                    {pendingRequests.map((req) => (
+                      <div key={req.id} className="flex items-center gap-4 p-4">
+                        <img
+                          src={
+                            req.sender.avatar_url ||
+                            `https://ui-avatars.com/api/?name=${req.sender.full_name}`
+                          }
+                          className="size-10 rounded-full border border-white/10"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-bold text-white">
+                            {req.sender.full_name}
+                          </p>
+                          <p className="text-[10px] text-amber-500/70 uppercase font-bold tracking-widest">
+                            Wants to connect
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleRequest(req.id, true)}
+                            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-500"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={() => handleRequest(req.id, false)}
+                            className="rounded-lg bg-zinc-800 px-3 py-1.5 text-xs font-bold text-zinc-400 hover:bg-zinc-700"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-              <div className="rounded-2xl border border-white/5 bg-zinc-900/50 p-1">
-                {friends.length > 0 ? (
-                  friends.map((friend) => (
-                    <div
-                      key={friend.id}
-                      className="group flex items-center gap-4 p-4 hover:bg-white/[0.02] transition-all"
-                    >
-                      <div className="size-10 rounded-full bg-zinc-800 border border-white/5 overflow-hidden">
+              {/* 2. FRIENDS LIST */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-indigo-500 shadow-[0_0_8px_#6366f1]" />
+                  Your Friends
+                </h2>
+                <div className="rounded-2xl border border-white/5 bg-zinc-900/50 p-1">
+                  {friends.length > 0 ? (
+                    friends.map((friend) => (
+                      <div
+                        key={friend.id}
+                        className="group flex items-center gap-4 p-4 hover:bg-white/[0.02] transition-all"
+                      >
                         <img
                           src={
                             friend.avatar_url ||
-                            `https://ui-avatars.com/api/?name=${friend.full_name}&background=random`
+                            `https://ui-avatars.com/api/?name=${friend.full_name}`
                           }
-                          alt="avatar"
+                          className="size-10 rounded-full bg-zinc-800 border border-white/5"
                         />
-                      </div>
-
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-zinc-200">
-                          {friend.full_name}
-                        </p>
-                        <div className="flex items-center gap-1.5">
-                          <span className="size-1.5 rounded-full bg-emerald-500" />
-                          <span className="text-[10px] text-zinc-500 uppercase tracking-tight font-medium">
-                            Online
-                          </span>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-zinc-200">
+                            {friend.full_name}
+                          </p>
+                          <div className="flex items-center gap-1.5">
+                            <span className="size-1.5 rounded-full bg-emerald-500" />
+                            <span className="text-[10px] text-zinc-500 uppercase font-medium">
+                              Online
+                            </span>
+                          </div>
                         </div>
+                        <button className="opacity-0 group-hover:opacity-100 text-xs text-zinc-500 hover:text-white transition-all">
+                          View Profile
+                        </button>
                       </div>
-
-                      <button className="opacity-0 group-hover:opacity-100 text-xs text-zinc-500 hover:text-white transition-all">
-                        View Profile
-                      </button>
+                    ))
+                  ) : (
+                    <div className="p-8 text-center text-sm text-zinc-600">
+                      No friends found yet.
                     </div>
-                  ))
-                ) : (
-                  <div className="p-8 text-center text-sm text-zinc-600">
-                    No friends found yet. Use the search to find people!
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </section>
 

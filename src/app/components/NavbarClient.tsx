@@ -205,9 +205,11 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
                       </MenuButton>
                       <MenuItems className="absolute right-0 mt-3 w-48 origin-top-right rounded-xl border border-white/10 bg-zinc-900 p-1 shadow-2xl outline-none">
                         <MenuItem>
-                          <NavLoadingLink href="/profile">
-                            Your Profile
-                          </NavLoadingLink>
+                          <div className="w-full">
+                            <NavLoadingLink href="/profile">
+                              Your Profile
+                            </NavLoadingLink>
+                          </div>
                         </MenuItem>
                         <MenuItem>
                           <button
