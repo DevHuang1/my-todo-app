@@ -26,22 +26,19 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
   const [isActionLoading, setIsActionLoading] = useState(false);
   const fetchRequests = async () => {
     if (!user?.id) return;
-    setIsActionLoading(true);
-    const { data, error } = await supabase.from("friends").select(`
-      id,
-      status,
-      friend_id,
-      user_id
-    `);
 
-    console.log("DATABASE CHECK: All rows in friends table:", data);
-    console.log("DATABASE CHECK: My Current ID:", user.id);
-    setIsActionLoading(false);
+    const { data, error } = await supabase.from("friends").select(`
+    id,
+    status,
+    friend_id,
+    user_id,
+    sender:profiles!user_id (id, full_name, avatar_url) 
+  `);
+
     if (data) {
       const filtered = data.filter(
         (row) => row.friend_id === user.id && row.status === "pending",
       );
-      console.log("DATABASE CHECK: Rows that SHOULD match:", filtered);
       setNotifications(filtered);
     }
   };
@@ -205,9 +202,13 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
                       </MenuButton>
                       <MenuItems className="absolute right-0 mt-3 w-48 origin-top-right rounded-xl border border-white/10 bg-zinc-900 p-1 shadow-2xl outline-none">
                         <MenuItem>
-                          <NavLoadingLink href="/profile">
-                            Your Profile
-                          </NavLoadingLink>
+                          <div className="group rounded-lg transition-colors data-[focus]:bg-white/5">
+                            <NavLoadingLink href="/profile">
+                              <span className="block w-full px-3 py-2 text-sm text-zinc-400 group-data-[focus]:text-white">
+                                Your Profile
+                              </span>
+                            </NavLoadingLink>
+                          </div>
                         </MenuItem>
                         <MenuItem>
                           <button
