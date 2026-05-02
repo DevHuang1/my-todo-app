@@ -13,6 +13,7 @@ import Link from "next/link";
 import { signOut } from "../lib/actions";
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
+import Toast, { ToastType } from "./Toast";
 import {
   BellIcon,
   CheckIcon,
@@ -24,22 +25,35 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
   const [notifications, setNotifications] = useState<any[]>([]);
   const supabase = createClient();
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const [toast, setToast] = useState({
+    isVisible: false,
+    message: "",
+    type: "info" as ToastType,
+  });
+
+  const showToast = (message: string, type: ToastType) => {
+    setToast({ isVisible: true, message, type });
+    setTimeout(() => setToast((prev) => ({ ...prev, isVisible: false })), 4000);
+  };
   const fetchRequests = async () => {
     if (!user?.id) return;
 
-    const { data, error } = await supabase.from("friends").select(`
-    id,
-    status,
-    friend_id,
-    user_id,
-    sender:profiles!user_id (id, full_name, avatar_url) 
-  `);
+    const { data, error } = await supabase
+      .from("friends")
+      .select(
+        `
+      id,
+      status,
+      friend_id,
+      user_id,
+      sender:profiles!user_id (id, full_name, avatar_url) 
+    `,
+      )
+      .eq("friend_id", user.id)
+      .eq("status", "pending");
 
     if (data) {
-      const filtered = data.filter(
-        (row) => row.friend_id === user.id && row.status === "pending",
-      );
-      setNotifications(filtered);
+      setNotifications(data);
     }
   };
   useEffect(() => {
@@ -65,15 +79,30 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
     };
   }, [user.id]);
   const handleRequest = async (requestId: string, accept: boolean) => {
-    if (accept) {
-      await supabase
-        .from("friends")
-        .update({ status: "accepted" })
-        .eq("id", requestId);
-    } else {
-      await supabase.from("friends").delete().eq("id", requestId);
+    setIsActionLoading(true);
+    try {
+      if (accept) {
+        await supabase
+          .from("friends")
+          .update({ status: "accepted" })
+          .eq("id", requestId);
+        showToast("Connection accepted!", "success");
+      } else {
+        await supabase.from("friends").delete().eq("id", requestId);
+        showToast("Request declined", "info");
+      }
+
+      setNotifications((prev) => prev.filter((n) => n.id !== requestId));
+
+      // If they are on the friends page, refresh to show new friend in list
+      if (window.location.pathname === "/friends") {
+        window.location.reload();
+      }
+    } catch (err) {
+      showToast("Something went wrong", "error");
+    } finally {
+      setIsActionLoading(false);
     }
-    setNotifications((prev) => prev.filter((n) => n.id !== requestId));
   };
   const NotificationMenu = ({
     align = "right",
@@ -147,12 +176,16 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
       await signOut();
     } catch (error) {
       setIsActionLoading(false);
-      console.error(error);
+      showToast("Sign out failed", "error");
     }
   };
   return (
     <>
       <LoadingOverlay isLoading={isActionLoading} />
+      <Toast
+        {...toast}
+        onClose={() => setToast((prev) => ({ ...prev, isVisible: false }))}
+      />
       <Disclosure
         as="nav"
         className="sticky top-0 z-50 border-b border-white/5 bg-zinc-900/60 backdrop-blur-xl text-white"

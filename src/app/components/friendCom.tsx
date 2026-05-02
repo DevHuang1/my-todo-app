@@ -3,6 +3,7 @@ import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import LoadingOverlay from "./loadingOverlay";
+import Toast, { ToastType } from "../components/Toast";
 
 export default function FriendsPage({ profile }: { profile: any }) {
   const supabase = createClient();
@@ -11,7 +12,16 @@ export default function FriendsPage({ profile }: { profile: any }) {
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [toast, setToast] = useState({
+    isVisible: false,
+    message: "",
+    type: "info" as ToastType,
+  });
 
+  const showToast = (message: string, type: ToastType) => {
+    setToast({ isVisible: true, message, type });
+    setTimeout(() => setToast((prev) => ({ ...prev, isVisible: false })), 4000);
+  };
   const fetchData = async () => {
     if (!profile?.id) return;
     setIsLoading(true);
@@ -76,28 +86,47 @@ export default function FriendsPage({ profile }: { profile: any }) {
     setIsLoading(false);
   };
   const addFriend = async (targetId: string) => {
-    const { error } = await supabase.from("friends").insert([
-      {
-        user_id: profile.id,
-        friend_id: targetId,
-        status: "pending",
-      },
-    ]);
+    const { data: existing } = await supabase
+      .from("friends")
+      .select("status")
+      .or(
+        `and(user_id.eq.${profile.id},friend_id.eq.${targetId}),and(user_id.eq.${targetId},friend_id.eq.${profile.id})`,
+      )
+      .single();
+
+    if (existing) {
+      const message =
+        existing.status === "accepted"
+          ? "You are already friends!"
+          : "A friend request is already pending.";
+      showToast(message, "info");
+      return;
+    }
+    const { error } = await supabase
+      .from("friends")
+      .insert([
+        { user_id: profile.id, friend_id: targetId, status: "pending" },
+      ]);
+
     if (error) {
       if (error.code === "23505") {
-        // Postgres code for Unique Violation
-        alert("You have already sent a request to this person!");
+        showToast("Request already sent!", "info");
       } else {
-        console.error("Error sending request", error);
+        showToast("Failed to send request. Try again.", "error");
+        console.error("Add Friend Error:", error.message);
       }
     } else {
-      alert("Friend request successful!");
+      showToast("Friend request sent successfully!", "success");
     }
   };
 
   return (
     <>
       <LoadingOverlay isLoading={isLoading} />
+      <Toast
+        {...toast}
+        onClose={() => setToast((prev) => ({ ...prev, isVisible: false }))}
+      />
       <div className="min-h-screen bg-[#09090b] text-zinc-400 pb-20">
         <header className="border-b border-white/5 bg-zinc-900/50 backdrop-blur-md">
           <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
