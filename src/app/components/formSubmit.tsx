@@ -14,7 +14,7 @@ export default function FormSubmit({
       <button
         type="submit"
         disabled={pending}
-        className="flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-indigo-500 transition-all active:scale-[0.98] disabled:opacity-50"
+        className="flex w-fit justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-indigo-500 transition-all active:scale-[0.98] disabled:opacity-50"
       >
         {pending ? "Creating account..." : label}
       </button>

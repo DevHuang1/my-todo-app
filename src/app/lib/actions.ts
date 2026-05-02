@@ -53,4 +53,5 @@ export async function signOut() {
   if (error) {
     console.error("Error signing out:", error.message);
   }
+  redirect("/login");
 }

@@ -144,7 +144,15 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
       </MenuItems>
     </Menu>
   );
-
+  const handleSignOut = async () => {
+    setIsActionLoading(true);
+    try {
+      await signOut();
+    } catch (error) {
+      setIsActionLoading(false);
+      console.error(error);
+    }
+  };
   return (
     <>
       <LoadingOverlay isLoading={isActionLoading} />
@@ -197,16 +205,13 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
                       </MenuButton>
                       <MenuItems className="absolute right-0 mt-3 w-48 origin-top-right rounded-xl border border-white/10 bg-zinc-900 p-1 shadow-2xl outline-none">
                         <MenuItem>
-                          <Link
-                            href="/profile"
-                            className="flex w-full px-3 py-2 text-sm text-zinc-400 hover:bg-white/5 hover:text-white rounded-lg"
-                          >
+                          <NavLoadingLink href="/profile">
                             Your Profile
-                          </Link>
+                          </NavLoadingLink>
                         </MenuItem>
                         <MenuItem>
                           <button
-                            onClick={() => signOut()}
+                            onClick={handleSignOut}
                             className="flex w-full px-3 py-2 text-sm text-zinc-400 hover:bg-white/5 hover:text-white rounded-lg text-left"
                           >
                             Sign out
@@ -232,24 +237,9 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
             {/* MOBILE MENU */}
             <DisclosurePanel className="md:hidden border-t border-white/5 bg-zinc-900/90 backdrop-blur-md">
               <div className="space-y-1 px-2 pb-3 pt-2">
-                <Link
-                  href="/dashboard"
-                  className="block rounded-md px-3 py-2 text-base font-medium text-zinc-400 hover:bg-white/5 hover:text-white"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/courses"
-                  className="block rounded-md px-3 py-2 text-base font-medium text-zinc-400 hover:bg-white/5 hover:text-white"
-                >
-                  Courses
-                </Link>
-                <Link
-                  href="/friends"
-                  className="block rounded-md px-3 py-2 text-base font-medium text-zinc-400 hover:bg-white/5 hover:text-white"
-                >
-                  Friends
-                </Link>
+                <NavLoadingLink href="/dashboard">Dashboard</NavLoadingLink>
+                <NavLoadingLink href="/courses">Courses</NavLoadingLink>
+                <NavLoadingLink href="/friends">Friends</NavLoadingLink>
               </div>
 
               <div className="border-t border-white/5 pb-3 pt-4 px-5">
@@ -273,14 +263,9 @@ export default function NavbarClient({ user, displayName, userImage }: any) {
                   <NotificationMenu align="right" />
                 </div>
                 <div className="mt-3 space-y-1">
-                  <Link
-                    href="/profile"
-                    className="block rounded-md px-3 py-2 text-base font-medium text-zinc-400 hover:bg-white/5 hover:text-white"
-                  >
-                    Your Profile
-                  </Link>
+                  <NavLoadingLink href="/profile">Your Profile</NavLoadingLink>
                   <button
-                    onClick={() => signOut()}
+                    onClick={handleSignOut}
                     className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-rose-400 hover:bg-white/5 transition-colors"
                   >
                     Sign out
