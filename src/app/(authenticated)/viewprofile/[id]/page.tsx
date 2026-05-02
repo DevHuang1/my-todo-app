@@ -9,20 +9,24 @@ import UnfriendButton from "@/app/components/unfriendBtn";
 export default async function ViewProfilePage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  const { data: profile } = await supabase
+  const { data: profile, error } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!profile || !user) notFound();
+  if (error || !profile) {
+    console.error("Profile fetch error or missing:", error?.message);
+    return notFound();
+  }
 
   return (
     <div className="min-h-screen bg-[#09090b] text-white p-4 md:p-8">
@@ -64,7 +68,7 @@ export default async function ViewProfilePage({
               <UnfriendButton
                 friendId={profile.id}
                 friendName={profile.full_name || profile.username}
-                myId={user.id}
+                myId={user?.id || ""}
               />
             </div>
 
