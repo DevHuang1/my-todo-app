@@ -3,6 +3,7 @@ import { PhotoIcon, UserCircleIcon } from "@heroicons/react/24/solid";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { updateProfile } from "../profileData/actions";
 import { useState } from "react";
+import FormSubmit from "./formSubmit";
 
 export default function Profile({ initialProfile }: { initialProfile: any }) {
   const [avatarPreview, setAvatarPreview] = useState(
@@ -551,18 +552,8 @@ export default function Profile({ initialProfile }: { initialProfile: any }) {
           </div>
 
           <div className="mt-6 flex items-center justify-end gap-x-6">
-            <button
-              type="button"
-              className="text-sm/6 font-semibold text-gray-900 dark:text-white"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:focus-visible:outline-indigo-500"
-            >
-              Save
-            </button>
+            <FormSubmit label="Cancel" />
+            <FormSubmit label="Save" />
           </div>
         </form>
       </div>

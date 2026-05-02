@@ -21,10 +21,8 @@ export async function registerUser(formData: FormData) {
     },
   });
   if (error) {
-    // 3. This will show up in your Vercel "Logs" tab
     console.error("Signup Error Log:", error.message);
 
-    // Pass the real error to the URL to see it in your browser
     return redirect(`/signup?error=${encodeURIComponent(error.message)}`);
   }
 

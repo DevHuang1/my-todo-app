@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import LoadingOverlay from "./loadingOverlay";
 export default function Dashboard({
   profile,
   tasks: initialTasks,
@@ -17,11 +18,12 @@ export default function Dashboard({
   const [isOpen, setIsOpen] = useState(false);
   const [dueLabel, setDueLabel] = useState("");
   const [title, setTitle] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
   const router = useRouter();
   const handleAddTask = async (e: React.BaseSyntheticEvent) => {
     e.preventDefault();
-
+    setIsLoading(true);
     const { data, error } = await supabase
       .from("tasks")
       .insert([
@@ -34,6 +36,7 @@ export default function Dashboard({
       ])
       .select()
       .single();
+    setIsLoading(false);
     if (!error && data) {
       setTasks([data, ...tasks]);
       setIsOpen(false);
@@ -46,14 +49,16 @@ export default function Dashboard({
   };
   const handleToggleTask = async (id: string, currentStatus: boolean) => {
     const newStatus = !currentStatus;
-
+    setIsLoading(true);
     setTasks(
       tasks.map((t) => (t.id === id ? { ...t, is_completed: newStatus } : t)),
     );
+
     const { error } = await supabase
       .from("tasks")
       .update({ is_completed: newStatus })
       .eq("id", id);
+    setIsLoading(false);
     if (error) {
       console.error("Error toggling task", error);
       setTasks(
@@ -64,9 +69,11 @@ export default function Dashboard({
     }
   };
   const deleteTask = async (id: string) => {
+    setIsLoading(true);
     setTasks(tasks.filter((t) => t.id !== id));
 
     const { error } = await supabase.from("tasks").delete().eq("id", id);
+    setIsLoading(false);
     if (error) {
       console.error("Error deleting task", error);
       router.refresh();
@@ -75,6 +82,7 @@ export default function Dashboard({
 
   return (
     <>
+      <LoadingOverlay isLoading={isLoading} />
       <div className="min-h-screen bg-[#09090b] text-zinc-400">
         {/* Header Section */}
         <header className="border-b border-white/5 bg-zinc-900/50 backdrop-blur-md">
