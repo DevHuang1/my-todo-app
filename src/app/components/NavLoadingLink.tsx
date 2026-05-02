@@ -32,7 +32,7 @@ export default function NavLoadingLink({
     <Link
       href={href}
       onClick={handleNavigation}
-      className={className || defaultClasses} //
+      className={className || defaultClasses}
     >
       <span className={isPending ? "opacity-20" : "opacity-100"}>
         {children}
