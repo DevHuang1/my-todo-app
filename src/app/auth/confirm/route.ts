@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
-  const next = "/profileInfo"; // Where the user goes after confirming
+  const next = "/profileInfo";
 
   if (token_hash && type) {
     const cookieStore = await cookies();

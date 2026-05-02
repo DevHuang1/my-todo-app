@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { loginUser } from "../lib/actions";
+import FormSubmit from "../components/formSubmit";
 export default function SignIn() {
   return (
     <div className="flex min-h-screen flex-col justify-center bg-gray-900 px-6 py-12 lg:px-8">
@@ -49,12 +50,7 @@ export default function SignIn() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-indigo-500 transition-all active:scale-[0.98]"
-          >
-            Sign in
-          </button>
+          <FormSubmit label="Sign In" />
         </form>
 
         <p className="mt-10 text-center text-sm text-gray-400">
