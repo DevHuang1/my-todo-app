@@ -67,7 +67,7 @@ export default function UnfriendButton({
       <button
         onClick={confirmUnfriend}
         disabled={isDeleting}
-        className="mt-6 flex items-center gap-2 px-6 py-2.5 rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-bold text-sm disabled:opacity-50"
+        className="flex h-full w-full items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-bold text-xs disabled:opacity-50"
       >
         <UserMinusIcon className="size-4" />
         {isDeleting ? "Removing..." : "Unfriend"}
