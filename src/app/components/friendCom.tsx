@@ -252,10 +252,10 @@ export default function FriendsPage({ profile }: { profile: any }) {
                             </span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                        <div className="flex items-center gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all">
                           <NavLoadingLink
                             href={`/viewprofile/${friend.id}`}
-                            className="text-[11px] font-bold text-zinc-400 hover:text-white bg-zinc-800 px-3 py-1.5 rounded-lg"
+                            className="text-[11px] font-bold text-zinc-400 hover:text-white bg-zinc-800 px-3 py-1.5 rounded-lg shrink-0"
                           >
                             View Profile
                           </NavLoadingLink>
@@ -264,7 +264,7 @@ export default function FriendsPage({ profile }: { profile: any }) {
                             onClick={() =>
                               handleUnfriendClick(friend.id, friend.full_name)
                             }
-                            className="text-[11px] font-bold text-rose-400 hover:text-white hover:bg-rose-500/20 px-3 py-1.5 rounded-lg transition-colors"
+                            className="text-[11px] font-bold text-rose-400 hover:text-white hover:bg-rose-500/20 px-3 py-1.5 rounded-lg transition-colors shrink-0"
                           >
                             Unfriend
                           </button>
