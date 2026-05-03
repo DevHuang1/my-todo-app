@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 
 async function uploadImage(
   supabase: any,
-  file: File | null,
+  file: any,
   bucket: string,
   userId: string,
 ) {
@@ -39,14 +39,17 @@ export async function updateProfile(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("User not authenticated");
+  const avatarFile = formData.get("avatar-url");
+  const coverFile = formData.get("cover-url");
+
+  const [avatarUrl, coverUrl] = await Promise.all([
+    uploadImage(supabase, avatarFile, "avatars", user.id),
+    uploadImage(supabase, coverFile, "covers", user.id),
+  ]);
+
   const currentAvatarUrl = formData.get("current-avatar-url") as string;
   const currentCoverUrl = formData.get("current-cover-url") as string;
 
-  const avatarFile = formData.get("avatar-url") as File;
-  const avatarUrl = await uploadImage(supabase, avatarFile, "avatars", user.id);
-
-  const coverFile = formData.get("cover-url") as File;
-  const coverUrl = await uploadImage(supabase, coverFile, "covers", user.id);
   const username = formData.get("username") as string;
   const firstName = formData.get("first-name") as string;
   const lastName = formData.get("last-name") as string;
@@ -57,7 +60,13 @@ export async function updateProfile(formData: FormData) {
   const postalCode = formData.get("postal-code") as string;
   const country = formData.get("country") as string;
 
-  const profileData: any = { id: user.id };
+  const profileData: any = {
+    id: user.id,
+    updated_at: new Date().toISOString(),
+    username: username?.trim() || null,
+    avatar_url: avatarUrl || currentAvatarUrl || null,
+    cover_url: coverUrl || currentCoverUrl || null,
+  };
 
   if (username?.trim()) {
     const { data: existingUser } = await supabase
@@ -67,7 +76,6 @@ export async function updateProfile(formData: FormData) {
       .single();
 
     if (existingUser && existingUser.id !== user.id) {
-      // This username belongs to another account!
       throw new Error("This username is already taken. Please choose another.");
     }
   }
@@ -83,10 +91,6 @@ export async function updateProfile(formData: FormData) {
   if (postalCode?.trim()) profileData.postal_code = postalCode;
   if (country?.trim()) profileData.country = country;
 
-  profileData.updated_at = new Date().toISOString();
-
-  profileData.avatar_url = avatarUrl || currentAvatarUrl || null;
-  profileData.cover_url = coverUrl || currentCoverUrl || null;
   const { error } = await supabase.from("profiles").upsert(profileData, {
     onConflict: "id",
   });
