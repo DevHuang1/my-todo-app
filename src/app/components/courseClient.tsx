@@ -11,8 +11,18 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import LoadingOverlay from "./loadingOverlay";
 
+type Lesson = {
+  id: string;
+  title: string;
+  video_url: string;
+  is_completed: boolean;
+  order_index: number;
+  created_at: string;
+};
 export default function CourseClientPage({ course }: { course: any }) {
-  const [activeLesson, setActiveLesson] = useState(course.lessons[0]);
+  const [activeLesson, setActiveLesson] = useState<Lesson | null>(
+    course.lessons[0],
+  );
   const [isEnrolled, setIsEnrolled] = useState(course.is_enrolled);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -28,30 +38,42 @@ export default function CourseClientPage({ course }: { course: any }) {
   };
   const handleComplete = async () => {
     if (!activeLesson || activeLesson.is_completed) return;
+
     setIsLoading(true);
     const supabase = createClient();
+
     try {
       const { error: lessonError } = await supabase
         .from("lessons")
         .update({ is_completed: true })
         .eq("id", activeLesson.id);
+
       if (lessonError) throw lessonError;
+
       const { error: courseError } = await supabase
         .from("courses")
         .update({
-          completed_lessons: course.completed_lessons + 1,
+          completed_lessons: (course.completed_lessons || 0) + 1,
           last_accessed: new Date().toISOString(),
         })
         .eq("id", course.id);
+
       if (courseError) throw courseError;
+
+      setActiveLesson((prev) => {
+        if (!prev) return null;
+        return { ...prev, is_completed: true };
+      });
 
       router.refresh();
     } catch (error) {
       console.error("Error completing lesson:", error);
+      alert("Failed to save progress. Please try again.");
     } finally {
       setTimeout(() => setIsLoading(false), 500);
     }
   };
+
   return (
     <>
       <LoadingOverlay isLoading={isLoading} />
@@ -123,10 +145,17 @@ export default function CourseClientPage({ course }: { course: any }) {
                     </h1>
                     <button
                       onClick={handleComplete}
-                      className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500/10 text-emerald-500 rounded-xl border border-emerald-500/20 text-xs font-bold hover:bg-emerald-500/20 transition-all w-full sm:w-auto"
+                      disabled={activeLesson?.is_completed}
+                      className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border transition-all w-full sm:w-auto text-xs font-bold ${
+                        activeLesson?.is_completed
+                          ? "bg-emerald-500 text-white border-emerald-500" // "Marked" state
+                          : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20" // Default state
+                      }`}
                     >
                       <CheckCircleIcon className="size-4" />
-                      Mark as Complete
+                      {activeLesson?.is_completed
+                        ? "Marked"
+                        : "Mark as Complete"}
                     </button>
                   </div>
                 </div>
