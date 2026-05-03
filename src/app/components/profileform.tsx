@@ -4,8 +4,14 @@ import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { updateProfile } from "../profileData/actions";
 import { useState } from "react";
 import FormSubmit from "./formSubmit";
+import { createClient } from "@/utils/supabase/client";
+import Link from "next/link";
 
 export default function Profile({ initialProfile }: { initialProfile: any }) {
+  const [isUploading, setIsUploading] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+
   const [avatarPreview, setAvatarPreview] = useState(
     initialProfile?.avatar_url || "",
   );
@@ -19,20 +25,71 @@ export default function Profile({ initialProfile }: { initialProfile: any }) {
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
-
       if (type === "avatar") {
-        setAvatarPreview(url);
+        setAvatarFile(file); // Save the binary file
+        setAvatarPreview(url); // Save the preview string
       }
       if (type === "cover") {
-        setCoverPreview(url);
+        setCoverFile(file); // Save the binary file
+        setCoverPreview(url); // Save the preview string
       }
     }
   };
+  async function handleSubmit(e: React.BaseSyntheticEvent) {
+    e.preventDefault();
+    setIsUploading(true);
+
+    const supabase = createClient();
+    const formData = new FormData(e.currentTarget);
+    const userId = initialProfile.id;
+
+    try {
+      // Only upload if there is a NEW binary file selected
+      if (avatarFile) {
+        const path = `${userId}-${Date.now()}-avatar`;
+        const { data, error: uploadError } = await supabase.storage
+          .from("avatars")
+          .upload(path, avatarFile);
+
+        if (uploadError) throw uploadError;
+
+        if (data) {
+          const { data: urlData } = supabase.storage
+            .from("avatars")
+            .getPublicUrl(data.path);
+          formData.set("avatar-url", urlData.publicUrl);
+        }
+      }
+
+      if (coverFile) {
+        const path = `${userId}-${Date.now()}-cover`;
+        const { data, error: uploadError } = await supabase.storage
+          .from("covers")
+          .upload(path, coverFile);
+
+        if (uploadError) throw uploadError;
+
+        if (data) {
+          const { data: urlData } = supabase.storage
+            .from("covers")
+            .getPublicUrl(data.path);
+          formData.set("cover-url", urlData.publicUrl);
+        }
+      }
+
+      await updateProfile(formData);
+    } catch (error) {
+      console.error("Critical Profile Update Error:", error);
+      alert("Something went wrong while saving. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
-        <form action={updateProfile}>
+        <form onSubmit={handleSubmit}>
           <input
             type="hidden"
             name="current-avatar-url"
@@ -552,8 +609,17 @@ export default function Profile({ initialProfile }: { initialProfile: any }) {
           </div>
 
           <div className="mt-6 flex items-center justify-end gap-x-6">
-            <FormSubmit label="Cancel" />
-            <FormSubmit label="Save" />
+            <Link
+              href="/dashboard"
+              className="rounded-lg bg-gray-200 px-4 py-2.5 text-sm font-bold text-gray-900 shadow-md hover:bg-gray-300 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 transition-all"
+            >
+              Cancel
+            </Link>
+            <FormSubmit
+              label="Save"
+              loadingLabel="Saving profile..."
+              isManualLoading={isUploading}
+            />
           </div>
         </form>
       </div>
