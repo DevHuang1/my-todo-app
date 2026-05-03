@@ -8,6 +8,7 @@ import {
 } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
 export default function CourseClientPage({ course }: { course: any }) {
   const [activeLesson, setActiveLesson] = useState(course.lessons[0]);
@@ -15,8 +16,11 @@ export default function CourseClientPage({ course }: { course: any }) {
   const router = useRouter();
 
   const handleEnroll = async () => {
-    // In a real app, call supabase here to update 'is_enrolled' to true
-    // const { error } = await supabase.from('courses').update({ is_enrolled: true }).eq('id', course.id)
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("courses")
+      .update({ is_enrolled: true })
+      .eq("id", course.id);
     setIsEnrolled(true);
     router.refresh();
   };
