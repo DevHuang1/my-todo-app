@@ -27,94 +27,186 @@ export default async function ViewProfilePage({
   if (error || !profile) {
     return notFound();
   }
+  const { data: userCourses } = await supabase
+    .from("courses")
+    .select("*")
+    .eq("user_id", id)
+    .order("last_accessed", { ascending: false });
 
-  // Fallback for dates
+  const { data: targetFriends } = await supabase
+    .from("friends")
+    .select(
+      "friend_id, profiles:friend_id(id, full_name, avatar_url, username)",
+    )
+    .eq("user_id", id)
+    .eq("status", "accepted");
+
+  const { data: myFriends } = await supabase
+    .from("friends")
+    .select("friend_id")
+    .eq("user_id", user?.id)
+    .eq("status", "accepted");
+
+  const myFriendIds = new Set(myFriends?.map((f) => f.friend_id));
+  const mutualFriends =
+    targetFriends?.filter((f) => myFriendIds.has(f.friend_id)) || [];
+
   const joinYear = profile.created_at
     ? new Date(profile.created_at).getFullYear()
     : "2026";
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white p-4 md:p-8">
-      <div className="mx-auto max-w-2xl">
-        {/* Back Button */}
+    <div className="min-h-screen bg-[#09090b] text-white p-4 md:p-12">
+      <div className="mx-auto max-w-4xl">
+        {/* Back Header */}
         <Link
           href="/friends"
-          className="inline-flex items-center gap-2 text-zinc-500 hover:text-white mb-6 transition-colors group"
+          className="flex items-center gap-2 text-zinc-500 hover:text-white mb-8 transition-all group w-fit"
         >
           <ChevronLeftIcon className="size-4 group-hover:-translate-x-1 transition-transform" />
-          <span className="text-sm font-medium">Back to Friends</span>
+          <span className="text-sm font-bold tracking-tight">NETWORK</span>
         </Link>
 
-        {/* Profile Card Container */}
-        <div className="overflow-hidden rounded-3xl border border-white/5 bg-zinc-900/50 shadow-2xl backdrop-blur-xl">
-          {/* 1. Cover Image Section */}
-          <div
-            className="h-40 w-full bg-zinc-800 bg-cover bg-center relative"
-            style={{
-              backgroundImage: profile.cover_url
-                ? `url('${profile.cover_url}')`
-                : `linear-gradient(to bottom right, #4f46e5, #7c3aed)`, // Default gradient if no cover
-            }}
-          >
-            <div className="absolute inset-0 bg-black/20" />
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* LEFT COLUMN: Main Profile Info */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="relative overflow-hidden rounded-[2rem] border border-white/5 bg-zinc-900/40 backdrop-blur-md">
+              {/* Banner */}
+              <div className="h-32 w-full bg-gradient-to-r from-indigo-600 to-violet-600 opacity-20" />
 
-          {/* 2. Profile Content Section */}
-          <div className="px-8 pb-8">
-            <div className="relative flex flex-col items-center">
-              {/* Avatar - Overlapping the cover */}
-              <div className="relative -mt-16 mb-4">
-                <img
-                  src={
-                    profile.avatar_url ||
-                    `https://ui-avatars.com/api/?name=${profile.full_name}`
-                  }
-                  className="size-32 rounded-2xl border-4 border-[#09090b] object-cover shadow-2xl"
-                  alt={profile.full_name}
-                />
-                <div className="absolute bottom-2 right-2 size-5 rounded-full border-4 border-[#09090b] bg-emerald-500 shadow-lg"></div>
-              </div>
+              <div className="px-8 pb-8">
+                <div className="relative -mt-12 flex items-end gap-6">
+                  <img
+                    src={
+                      profile.avatar_url ||
+                      `https://ui-avatars.com/api/?name=${profile.full_name}`
+                    }
+                    className="size-28 rounded-3xl border-4 border-[#09090b] shadow-2xl object-cover"
+                  />
+                  <div className="pb-2">
+                    <h1 className="text-2xl font-black tracking-tight">
+                      {profile.full_name}
+                    </h1>
+                    <p className="text-indigo-400 text-sm font-medium">
+                      @{profile.username}
+                    </p>
+                  </div>
+                </div>
 
-              {/* Text Content */}
-              <div className="text-center w-full">
-                <h1 className="text-3xl font-bold tracking-tight text-white">
-                  {profile.full_name || profile.username}
-                </h1>
-                <p className="text-indigo-400 font-medium text-sm">
-                  @{profile.username}
+                <p className="mt-6 text-zinc-400 text-sm leading-relaxed max-w-md">
+                  {profile.about ||
+                    "This learner is currently focused on mastering new skills."}
                 </p>
 
-                <p className="mt-4 mx-auto text-zinc-400 text-sm max-w-sm leading-relaxed">
-                  {profile.about || "No bio available."}
-                </p>
-
-                {/* 3. Unfriend Button - Centered and Aligned */}
-                <div className="mt-6 flex justify-center">
+                <div className="mt-8 flex items-center gap-3">
                   <UnfriendButton
                     friendId={profile.id}
-                    friendName={profile.full_name || profile.username}
+                    friendName={profile.full_name}
                     myId={user?.id || ""}
                   />
+                  <button className="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs font-bold hover:bg-white/10 transition-all">
+                    Message
+                  </button>
                 </div>
               </div>
+            </div>
 
-              {/* Stats / Info Grid */}
-              <div className="grid w-full grid-cols-2 gap-4 border-t border-white/5 pt-8 mt-8">
-                <div className="rounded-2xl bg-white/[0.03] p-4 text-center border border-white/5">
-                  <p className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">
-                    Status
+            {/* Learning Bento Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {userCourses?.slice(0, 4).map((course) => {
+                const progress = Math.round(
+                  (course.completed_lessons / course.total_lessons) * 100,
+                );
+                return (
+                  <div
+                    key={course.id}
+                    className="group p-5 rounded-[2rem] bg-white/[0.03] border border-white/5 hover:border-indigo-500/30 transition-all"
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="size-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 font-bold text-xs">
+                        {course.category.substring(0, 2).toUpperCase()}
+                      </div>
+                      <span className="text-[10px] font-black text-zinc-500">
+                        {progress}%
+                      </span>
+                    </div>
+                    <h4 className="font-bold text-sm text-zinc-200 mb-4">
+                      {course.title}
+                    </h4>
+                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                      <div
+                        className="h-full transition-all duration-1000"
+                        style={{
+                          width: `${progress}%`,
+                          backgroundColor: course.accent_color,
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: Social Stats */}
+          <div className="space-y-6">
+            {/* Mutual Friends Card */}
+            <div className="p-6 rounded-[2rem] border border-white/5 bg-zinc-900/40">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-6">
+                Connections
+              </h3>
+
+              <div className="space-y-6">
+                <div>
+                  <p className="text-xs font-bold text-zinc-400 mb-3">
+                    Mutual Friends ({mutualFriends.length})
                   </p>
-                  <p className="mt-1 font-semibold text-emerald-400 italic">
-                    Connected
-                  </p>
+                  <div className="flex -space-x-3">
+                    {mutualFriends.slice(0, 4).map((mf: any) => (
+                      <img
+                        key={mf.friend_id}
+                        src={mf.profiles.avatar_url}
+                        className="size-8 rounded-full border-2 border-[#09090b]"
+                        title={mf.profiles.full_name}
+                      />
+                    ))}
+                    {mutualFriends.length > 4 && (
+                      <div className="size-8 rounded-full bg-zinc-800 border-2 border-[#09090b] flex items-center justify-center text-[10px] font-bold">
+                        +{mutualFriends.length - 4}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="rounded-2xl bg-white/[0.03] p-4 text-center border border-white/5">
-                  <p className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">
-                    Joined
+
+                <div>
+                  <p className="text-xs font-bold text-zinc-400 mb-3">
+                    All Friends
                   </p>
-                  <p className="mt-1 font-semibold text-zinc-200">{joinYear}</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {targetFriends?.slice(0, 8).map((f: any) => (
+                      <Link
+                        key={f.profiles.id}
+                        href={`/friends/${f.profiles.id}`}
+                      >
+                        <img
+                          src={f.profiles.avatar_url}
+                          className="size-10 rounded-xl bg-zinc-800 hover:scale-105 transition-transform"
+                        />
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               </div>
+            </div>
+
+            {/* Stats Card */}
+            <div className="p-6 rounded-[2rem] border border-emerald-500/10 bg-emerald-500/[0.02]">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500/50 mb-1">
+                Learning Status
+              </p>
+              <p className="text-emerald-400 font-bold italic text-sm">
+                Active Now
+              </p>
             </div>
           </div>
         </div>
