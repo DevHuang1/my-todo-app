@@ -241,8 +241,8 @@ export default function FriendsPage({ profile }: { profile: any }) {
                           }
                           className="size-10 rounded-full bg-zinc-800 border border-white/5"
                         />
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-zinc-200">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-zinc-200 truncate">
                             {friend.full_name}
                           </p>
                           <div className="flex items-center gap-1.5">
@@ -255,7 +255,7 @@ export default function FriendsPage({ profile }: { profile: any }) {
                         <div className="flex items-center gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all">
                           <NavLoadingLink
                             href={`/viewprofile/${friend.id}`}
-                            className="text-[11px] font-bold text-zinc-400 hover:text-white bg-zinc-800 px-3 py-1.5 rounded-lg shrink-0"
+                            className="text-[11px] font-bold text-zinc-400 hover:text-white bg-zinc-800 px-3 py-1.5 rounded-lg shrink-0 whitespace-nowrap"
                           >
                             View Profile
                           </NavLoadingLink>
@@ -264,7 +264,7 @@ export default function FriendsPage({ profile }: { profile: any }) {
                             onClick={() =>
                               handleUnfriendClick(friend.id, friend.full_name)
                             }
-                            className="text-[11px] font-bold text-rose-400 hover:text-white hover:bg-rose-500/20 px-3 py-1.5 rounded-lg transition-colors shrink-0"
+                            className="text-[11px] font-bold text-rose-400 hover:text-white hover:bg-rose-500/20 px-3 py-1.5 rounded-lg transition-colors shrink-0 whitespace-nowrap"
                           >
                             Unfriend
                           </button>
