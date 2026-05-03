@@ -7,13 +7,12 @@ import CourseClientPage from "@/app/components/courseClient";
 export default async function CoursePage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
-  const { id } = params;
+  const { id } = await params;
 
-  // Fetch Course + Lessons in one join query
   const { data: course, error } = await supabase
     .from("courses")
     .select(
@@ -26,10 +25,10 @@ export default async function CoursePage({
     .single();
 
   if (error || !course) {
+    console.error("Supabase Error:", error);
     return notFound();
   }
 
-  // Sort lessons by order_index
   const sortedLessons = course.lessons.sort(
     (a: any, b: any) => a.order_index - b.order_index,
   );
