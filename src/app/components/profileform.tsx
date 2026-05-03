@@ -6,7 +6,7 @@ import { useState } from "react";
 import FormSubmit from "./formSubmit";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
-
+import imageCompression from "browser-image-compression";
 export default function Profile({ initialProfile }: { initialProfile: any }) {
   const [isUploading, setIsUploading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -35,20 +35,30 @@ export default function Profile({ initialProfile }: { initialProfile: any }) {
       }
     }
   };
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.BaseSyntheticEvent) {
     e.preventDefault();
     setIsUploading(true);
 
     const supabase = createClient();
     const formData = new FormData(e.currentTarget);
     const userId = initialProfile.id;
-
+    const compressionOptions = {
+      maxSizeMB: 3,
+      maxWidthOrHeight: 2560,
+      useWebWorker: true,
+    };
     try {
       if (avatarFile) {
+        // Compress only if the file exists
+        const compressedAvatar = await imageCompression(
+          avatarFile,
+          compressionOptions,
+        );
+
         const path = `${userId}-${Date.now()}-avatar`;
         const { data, error: uploadError } = await supabase.storage
           .from("avatars")
-          .upload(path, avatarFile);
+          .upload(path, compressedAvatar);
 
         if (uploadError) throw uploadError;
 
@@ -59,10 +69,15 @@ export default function Profile({ initialProfile }: { initialProfile: any }) {
       }
 
       if (coverFile) {
+        const compressedCover = await imageCompression(
+          coverFile,
+          compressionOptions,
+        );
+
         const path = `${userId}-${Date.now()}-cover`;
         const { data, error: uploadError } = await supabase.storage
           .from("covers")
-          .upload(path, coverFile);
+          .upload(path, compressedCover);
 
         if (uploadError) throw uploadError;
 
@@ -74,14 +89,10 @@ export default function Profile({ initialProfile }: { initialProfile: any }) {
 
       await updateProfile(formData);
     } catch (error: any) {
-      if (error.message?.includes("NEXT_REDIRECT")) {
-        return;
-      }
-
-      console.error("Critical Profile Update Error:", error);
-      alert("Something went wrong while saving. Please try again.");
+      if (error.message?.includes("NEXT_REDIRECT")) return;
+      console.error("Upload Error:", error);
+      alert("Something went wrong during the upload.");
       setIsUploading(false);
-    } finally {
     }
   }
 
