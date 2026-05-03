@@ -24,12 +24,34 @@ export default async function Dashboard() {
     .select("*")
     .eq("is_enrolled", true)
     .order("last_accessed", { ascending: false });
+  const { data: myFriends } = await supabase
+    .from("friends")
+    .select("friend_id")
+    .eq("user_id", user?.id)
+    .eq("status", "accepted");
 
+  const friendIds = myFriends?.map((f) => f.friend_id) || [];
+
+  const { data: recentAchievements } = await supabase
+    .from("courses")
+    .select(
+      `
+    id,
+    title,
+    updated_at,
+    profiles:user_id (full_name, avatar_url)
+  `,
+    )
+    .in("user_id", friendIds)
+    .filter("completed_lessons", "eq", "total_lessons") // Only fully finished
+    .order("updated_at", { ascending: false })
+    .limit(5);
   return (
     <DashInfo
       profile={profile}
       tasks={tasks || []}
       courses={enrolledCourses || []}
+      achievements={recentAchievements || []}
     />
   );
 }

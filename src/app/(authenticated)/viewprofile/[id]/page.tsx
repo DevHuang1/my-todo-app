@@ -186,7 +186,7 @@ export default async function ViewProfilePage({
                     {targetFriends?.slice(0, 8).map((f: any) => (
                       <Link
                         key={f.profiles.id}
-                        href={`/friends/${f.profiles.id}`}
+                        href={`/viewprofile/${f.profiles.id}`}
                       >
                         <img
                           src={f.profiles.avatar_url}
