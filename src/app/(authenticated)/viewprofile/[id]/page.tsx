@@ -98,13 +98,16 @@ export default async function ViewProfilePage({
                     "This learner is currently focused on mastering new skills."}
                 </p>
 
-                <div className="mt-8 flex items-center gap-3">
-                  <UnfriendButton
-                    friendId={profile.id}
-                    friendName={profile.full_name}
-                    myId={user?.id || ""}
-                  />
-                  <button className="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs font-bold hover:bg-white/10 transition-all">
+                {/* 3. Action Buttons - Fixed Alignment */}
+                <div className="mt-8 flex flex-row items-stretch gap-3">
+                  <div className="flex-1 sm:flex-none">
+                    <UnfriendButton
+                      friendId={profile.id}
+                      friendName={profile.full_name}
+                      myId={user?.id || ""}
+                    />
+                  </div>
+                  <button className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs font-bold hover:bg-white/10 transition-all flex items-center justify-center">
                     Message
                   </button>
                 </div>
