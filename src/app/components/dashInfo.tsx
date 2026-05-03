@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import LoadingOverlay from "./loadingOverlay";
+import Link from "next/link";
 export default function Dashboard({
   profile,
   tasks: initialTasks,
@@ -311,52 +312,82 @@ export default function Dashboard({
               </h2>
 
               <div className="space-y-4">
-                {/* Course Card */}
-                <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-zinc-900/50 p-5 group transition-all hover:border-white/10">
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="text-sm font-bold text-white">
-                          Advanced Next.js Patterns
-                        </h3>
-                        <p className="text-xs text-zinc-500 mt-1">
-                          12 of 20 lessons completed
-                        </p>
-                      </div>
-                      <div className="rounded-lg bg-indigo-500/10 px-2 py-1 text-[10px] font-bold text-indigo-400">
-                        60%
-                      </div>
-                    </div>
+                {courses && courses.filter((c) => c.is_enrolled).length > 0 ? (
+                  courses
+                    .filter((course) => course.is_enrolled)
+                    .map((course) => {
+                      const progress =
+                        course.total_lessons > 0
+                          ? Math.round(
+                              (course.completed_lessons /
+                                course.total_lessons) *
+                                100,
+                            )
+                          : 0;
 
-                    {/* Progress Bar */}
-                    <div className="h-1.5 w-full rounded-full bg-zinc-800">
-                      <div className="h-1.5 w-[60%] rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.3)]" />
-                    </div>
+                      return (
+                        <Link
+                          key={course.id}
+                          href={`/courses/${course.id}`}
+                          className="group relative block overflow-hidden rounded-2xl border border-white/5 bg-zinc-900/50 p-5 transition-all hover:border-white/10 hover:bg-zinc-900/80"
+                        >
+                          <div className="flex flex-col gap-4">
+                            <div className="flex items-start justify-between">
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <h3 className="text-sm font-bold text-white truncate">
+                                    {course.title}
+                                  </h3>
+                                  {course.is_premium && (
+                                    <span className="rounded border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-500">
+                                      Pro
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-zinc-500 mt-1">
+                                  {course.completed_lessons} of{" "}
+                                  {course.total_lessons} lessons completed
+                                </p>
+                              </div>
+                              <div
+                                className="rounded-lg px-2 py-1 text-[10px] font-bold"
+                                style={{
+                                  backgroundColor: `${course.accent_color}1A`,
+                                  color: course.accent_color,
+                                }}
+                              >
+                                {progress}%
+                              </div>
+                            </div>
+
+                            {/* Progress Bar Container */}
+                            <div className="h-1.5 w-full rounded-full bg-zinc-800">
+                              <div
+                                className="h-1.5 rounded-full transition-all duration-700 ease-in-out"
+                                style={{
+                                  width: `${progress}%`,
+                                  backgroundColor: course.accent_color,
+                                  boxShadow: `0 0 10px ${course.accent_color}4D`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-white/5 p-8 text-center">
+                    <p className="text-sm text-zinc-600">
+                      No courses in progress.
+                    </p>
+                    <Link
+                      href="/courses"
+                      className="mt-2 inline-block text-xs font-bold text-emerald-500 hover:underline"
+                    >
+                      Browse Catalog →
+                    </Link>
                   </div>
-                </div>
-
-                {/* Another Course Card */}
-                <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-zinc-900/50 p-5 group transition-all hover:border-white/10">
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="text-sm font-bold text-white">
-                          Embedded Systems with C++
-                        </h3>
-                        <p className="text-xs text-zinc-500 mt-1">
-                          2 of 15 lessons completed
-                        </p>
-                      </div>
-                      <div className="rounded-lg bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-400">
-                        15%
-                      </div>
-                    </div>
-
-                    <div className="h-1.5 w-full rounded-full bg-zinc-800">
-                      <div className="h-1.5 w-[15%] rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             </section>
           </div>

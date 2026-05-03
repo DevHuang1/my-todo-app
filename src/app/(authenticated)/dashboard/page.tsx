@@ -19,12 +19,17 @@ export default async function Dashboard() {
     .from("tasks")
     .select("*")
     .eq("user_id", user?.id);
-  const { data: courses } = await supabase
-    .from("tasks")
+  const { data: enrolledCourses } = await supabase
+    .from("courses")
     .select("*")
-    .eq("user_id", user?.id);
+    .eq("is_enrolled", true)
+    .order("last_accessed", { ascending: false });
 
   return (
-    <DashInfo profile={profile} tasks={tasks || []} courses={courses || []} />
+    <DashInfo
+      profile={profile}
+      tasks={tasks || []}
+      courses={enrolledCourses || []}
+    />
   );
 }
