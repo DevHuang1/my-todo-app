@@ -328,7 +328,7 @@ export default function Dashboard({
                       return (
                         <Link
                           key={course.id}
-                          href={`/courses/${course.id}`}
+                          href={`/eachcourse/${course.id}`}
                           className="group relative block overflow-hidden rounded-2xl border border-white/5 bg-zinc-900/50 p-5 transition-all hover:border-white/10 hover:bg-zinc-900/80"
                         >
                           <div className="flex flex-col gap-4">
