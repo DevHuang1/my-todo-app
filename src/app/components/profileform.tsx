@@ -35,7 +35,7 @@ export default function Profile({ initialProfile }: { initialProfile: any }) {
       }
     }
   };
-  async function handleSubmit(e: React.BaseSyntheticEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsUploading(true);
 
@@ -44,7 +44,6 @@ export default function Profile({ initialProfile }: { initialProfile: any }) {
     const userId = initialProfile.id;
 
     try {
-      // Only upload if there is a NEW binary file selected
       if (avatarFile) {
         const path = `${userId}-${Date.now()}-avatar`;
         const { data, error: uploadError } = await supabase.storage
@@ -53,12 +52,10 @@ export default function Profile({ initialProfile }: { initialProfile: any }) {
 
         if (uploadError) throw uploadError;
 
-        if (data) {
-          const { data: urlData } = supabase.storage
-            .from("avatars")
-            .getPublicUrl(data.path);
-          formData.set("avatar-url", urlData.publicUrl);
-        }
+        const { data: urlData } = supabase.storage
+          .from("avatars")
+          .getPublicUrl(data.path);
+        formData.set("avatar-url", urlData.publicUrl);
       }
 
       if (coverFile) {
@@ -69,20 +66,22 @@ export default function Profile({ initialProfile }: { initialProfile: any }) {
 
         if (uploadError) throw uploadError;
 
-        if (data) {
-          const { data: urlData } = supabase.storage
-            .from("covers")
-            .getPublicUrl(data.path);
-          formData.set("cover-url", urlData.publicUrl);
-        }
+        const { data: urlData } = supabase.storage
+          .from("covers")
+          .getPublicUrl(data.path);
+        formData.set("cover-url", urlData.publicUrl);
       }
 
       await updateProfile(formData);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.message?.includes("NEXT_REDIRECT")) {
+        return;
+      }
+
       console.error("Critical Profile Update Error:", error);
       alert("Something went wrong while saving. Please try again.");
-    } finally {
       setIsUploading(false);
+    } finally {
     }
   }
 
@@ -163,7 +162,7 @@ export default function Profile({ initialProfile }: { initialProfile: any }) {
                   >
                     Photo
                   </label>
-                  <div className="mt-2 flex items-center gap-x-3">
+                  <div className="mt-2 flex items-center gap-x-3 flex-wrap sm:flex-nowrap">
                     {avatarPreview ? (
                       <img
                         src={avatarPreview || "/default-avatar.png"}
@@ -174,7 +173,7 @@ export default function Profile({ initialProfile }: { initialProfile: any }) {
                     ) : (
                       <UserCircleIcon className="size-12 text-gray-500" />
                     )}
-                    <label className="cursor-pointer rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/20">
+                    <label className="shrink-0 cursor-pointer rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/20">
                       <span>Change</span>
                       <input
                         type="file"
