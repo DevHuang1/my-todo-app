@@ -3,7 +3,7 @@ import { useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import LoadingOverlay from "./loadingOverlay";
 
 const CATEGORIES = ["All", "Web Tech", "Database", "Grade 12", "Embedded"];
