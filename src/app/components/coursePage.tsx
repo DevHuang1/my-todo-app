@@ -66,10 +66,9 @@ export default function CoursesPage({ courses }: { courses: any[] }) {
           {filteredCourses?.map((course) => (
             <Link
               key={course.id}
-              href={`/courses/${course.id}`}
+              href={`/eachcourse/${course.id}`}
               className="group relative flex flex-col bg-zinc-900/40 border border-white/5 rounded-3xl overflow-hidden hover:border-white/10 transition-all hover:-translate-y-1"
             >
-              {/* Background Glow based on accent_color */}
               <div
                 className="h-24 w-full opacity-10 group-hover:opacity-20 transition-opacity"
                 style={{ backgroundColor: course.accent_color }}

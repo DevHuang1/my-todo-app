@@ -16,7 +16,7 @@ export default function CourseClientPage({ course }: { course: any }) {
   const router = useRouter();
 
   const handleEnroll = async () => {
-    const supabase = await createClient();
+    const supabase = createClient();
     const { error } = await supabase
       .from("courses")
       .update({ is_enrolled: true })
@@ -49,7 +49,6 @@ export default function CourseClientPage({ course }: { course: any }) {
 
       <main className="max-w-screen-2xl mx-auto p-4 lg:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* LEFT: Player Area */}
           <div className="lg:col-span-8 space-y-6">
             {!isEnrolled ? (
               // PREVIEW MODE
