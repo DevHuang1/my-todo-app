@@ -221,7 +221,6 @@ export default function FriendsPage({ profile }: { profile: any }) {
                 </div>
               )}
 
-              {/* 2. FRIENDS LIST */}
               <div className="space-y-4">
                 <h2 className="text-lg font-semibold text-white flex items-center gap-2">
                   <span className="size-2 rounded-full bg-indigo-500 shadow-[0_0_8px_#6366f1]" />
